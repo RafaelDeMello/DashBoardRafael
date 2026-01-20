@@ -6,10 +6,10 @@ const useStore = create(
     (set) => ({
       transactions: [],
       categories: [
-        { id: '1', name: 'Aluguel', color: '#FF6B6B', isFixed: true },
-        { id: '2', name: 'Alimentação', color: '#4ECDC4', isFixed: false },
-        { id: '3', name: 'Saúde/Academia', color: '#95E1D3', isFixed: false },
-        { id: '4', name: 'Gasolina', color: '#F7B731', isFixed: false },
+        { id: '1', name: 'Aluguel', color: '#1e293b', isFixed: true },
+        { id: '2', name: 'Alimentação', color: '#334155', isFixed: false },
+        { id: '3', name: 'Saúde/Academia', color: '#475569', isFixed: false },
+        { id: '4', name: 'Gasolina', color: '#64748b', isFixed: false },
       ],
 
       addTransaction: (transaction) =>

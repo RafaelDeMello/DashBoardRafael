@@ -9,6 +9,41 @@ function App() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    // Limpar dados antigos com cores antigas (migração)
+    try {
+      const savedCategories = localStorage.getItem('dash-categories')
+      if (savedCategories) {
+        let parsed
+        try {
+          parsed = JSON.parse(savedCategories)
+        } catch {
+          // Se for criptografado, remove para recarregar
+          localStorage.removeItem('dash-categories')
+          return
+        }
+        
+        const colorMap = {
+          '#FF6B6B': '#1e293b',
+          '#4ECDC4': '#334155',
+          '#95E1D3': '#475569',
+          '#F7B731': '#64748b',
+          '#fbcfe8': '#64748b',
+        }
+        
+        const hasOldColors = parsed.some(cat => colorMap[cat.color])
+        if (hasOldColors) {
+          // Atualiza as cores e salva de volta
+          const updated = parsed.map(cat => ({
+            ...cat,
+            color: colorMap[cat.color] || cat.color
+          }))
+          localStorage.setItem('dash-categories', JSON.stringify(updated))
+        }
+      }
+    } catch (e) {
+      console.log('Erro ao verificar cores antigas:', e)
+    }
+    
     // Verificar se há uma senha salva no primeiro carregamento
     const savedHash = localStorage.getItem('dash-password-hash')
     if (savedHash) {

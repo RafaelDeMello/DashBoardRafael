@@ -2,7 +2,7 @@
 // Nota: Usando um método simples pois crypto-js pode ter issues com imports
 // Para produção, considere usar uma biblioteca mais robusta
 
-const ENCRYPTION_KEY = 'dash-andressa-key' // Chave fixa (melhor usar a senha do usuário)
+const ENCRYPTION_KEY = 'dash-rafael-key' // Chave fixa (melhor usar a senha do usuário)
 
 /**
  * Criptografa um objeto usando XOR (simples, rápido)

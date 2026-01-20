@@ -29,7 +29,7 @@ export default function BackupManager({ transactions, categories, onImport, pass
     const now = new Date()
     const dateStr = now.toISOString().split('T')[0]
     const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-')
-    const filename = `backup-andressa-${dateStr}-${timeStr}.enc`
+    const filename = `backup-rafael-${dateStr}-${timeStr}.enc`
     
     // Cria link temporário e faz download
     const link = document.createElement('a')

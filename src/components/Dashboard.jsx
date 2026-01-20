@@ -22,6 +22,20 @@ export default function Dashboard({ password, onLogout }) {
     { id: '5', name: 'Outros', color: '#64748b', isFixed: false },
   ])
   const [isLoaded, setIsLoaded] = useState(false)
+  // Função para migrar cores antigas para cinzas
+  const migrateColors = (cats) => {
+    const colorMap = {
+      '#FF6B6B': '#1e293b',      // vermelho → azul escuro
+      '#4ECDC4': '#334155',      // turquesa → azul acinzentado
+      '#95E1D3': '#475569',      // menta → cinza azulado
+      '#F7B731': '#64748b',      // amarelo → cinza azul
+      '#fbcfe8': '#64748b',      // rosa muito claro → cinza
+    }
+    return cats.map(cat => ({
+      ...cat,
+      color: colorMap[cat.color] || cat.color
+    }))
+  }
 
   // Load data from localStorage
   useEffect(() => {
@@ -46,11 +60,12 @@ export default function Dashboard({ password, onLogout }) {
         try {
           const decrypted = decryptData(savedCategories, password)
           if (decrypted) {
-            setCategories(decrypted)
+            setCategories(migrateColors(decrypted))
           }
         } catch (e) {
           // Se não conseguir descriptografar, trata como JSON simples
-          setCategories(JSON.parse(savedCategories))
+          const parsed = JSON.parse(savedCategories)
+          setCategories(migrateColors(parsed))
         }
       }
       setIsLoaded(true)

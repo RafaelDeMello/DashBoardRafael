@@ -45,7 +45,7 @@ export function PieChartComponent({ transactions, categories }) {
             `${name}: ${(percent * 100).toFixed(0)}%`
           }
           outerRadius={120}
-          fill="#8884d8"
+          fill="#475569"
           dataKey="value"
         >
           {data.map((entry, index) => (

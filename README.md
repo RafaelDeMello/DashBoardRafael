@@ -1,4 +1,4 @@
-# DashAndressa - Dashboard Financeiro Pessoal
+# DashRafael - Dashboard Financeiro Pessoal
 
 Um dashboard completo para controle financeiro pessoal, construído com React, Vite, Tailwind CSS e Recharts.
 

@@ -90,12 +90,12 @@ export default function Login({ onLogin }) {
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-24 h-24 rounded-full mb-4 shadow-lg overflow-hidden border-4 border-slate-300">
             <img 
-              src="/avatar.jpg" 
-              alt="Andressa" 
+              src="/rafaell.jpg" 
+              alt="Rafael" 
               className="w-full h-full object-cover"
             />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Dash Andressa</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Dash Rafael</h1>
           <p className="text-gray-500 text-sm mt-2">Gerenciador de Despesas</p>
         </div>
 
@@ -191,7 +191,7 @@ export default function Login({ onLogin }) {
           // Login
           <form onSubmit={handleLogin} className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Bem-vinda, Andressa! 👋
+              Bem-vindo, Rafael! 👋
             </h2>
 
             <div>
