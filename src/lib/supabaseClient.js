@@ -1,11 +1,17 @@
 import { createClient } from '@supabase/supabase-js'
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+let SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 console.log('=== Supabase Config Debug ===')
 console.log('VITE_SUPABASE_URL:', SUPABASE_URL)
 console.log('VITE_SUPABASE_ANON_KEY:', SUPABASE_KEY ? SUPABASE_KEY.substring(0, 20) + '...' : 'undefined')
+
+// Corrigir URL se não tiver https://
+if (SUPABASE_URL && !SUPABASE_URL.startsWith('http')) {
+  SUPABASE_URL = `https://${SUPABASE_URL}`
+  console.log('🔧 URL corrigida para:', SUPABASE_URL)
+}
 
 let supabase
 
