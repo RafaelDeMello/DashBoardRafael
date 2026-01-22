@@ -390,8 +390,18 @@ const useStore = create((set, get) => ({
   deleteCreditCard: async (cardId) => {
     try {
       console.log('🗑️ Deletando cartão:', cardId)
-      await get().updateCreditCard(cardId, { is_active: false })
+      const { error } = await supabase
+        .from('credit_cards')
+        .update({ is_active: false })
+        .eq('id', cardId)
+
+      if (error) throw error
+
       console.log('✓ Cartão deletado')
+      
+      // Recarregar lista de cartões
+      const userId = get().user?.id
+      if (userId) await get().loadCreditCards(userId)
     } catch (err) {
       console.error('❌ Erro ao deletar cartão:', err)
       throw err
