@@ -1,14 +1,16 @@
 import { useState } from 'react'
-import { Menu, X, BarChart3, Settings, Home, LogOut } from 'lucide-react'
-import BackupManager from './BackupManager'
+import { Menu, X, BarChart3, Settings, Home, LogOut, CreditCard, FileText } from 'lucide-react'
 
-export default function Sidebar({ activeTab, setActiveTab, transactions, categories, onImport, onLogout }) {
+export default function Sidebar({ activeTab, setActiveTab, onLogout, sidebarBg = 'bg-gradient-to-b from-slate-800 to-slate-900', avatarUrl = null, gender = null }) {
   const [isOpen, setIsOpen] = useState(true)
+  const isFeminino = gender === 'feminino'
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'transactions', label: 'Despesas', icon: BarChart3 },
     { id: 'categories', label: 'Add Despesas', icon: Settings },
+    { id: 'credit_cards', label: 'Cartões', icon: CreditCard },
+    { id: 'invoices', label: 'Faturas', icon: FileText },
   ]
 
   return (
@@ -25,12 +27,26 @@ export default function Sidebar({ activeTab, setActiveTab, transactions, categor
       <aside
         className={`${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } md:translate-x-0 fixed md:static left-0 top-0 h-screen w-64 bg-gradient-to-b from-slate-800 to-slate-900 text-white shadow-lg transition-transform duration-300 z-40 overflow-y-auto pt-20 md:pt-0`}
+        } md:translate-x-0 fixed md:static left-0 top-0 h-screen w-64 ${sidebarBg} text-white shadow-lg transition-transform duration-300 z-40 overflow-y-auto pt-20 md:pt-0`}
       >
         {/* Logo */}
         <div className="p-6 border-b border-blue-900">
-          <h1 className="text-2xl font-bold">DashBoard</h1>
-          <p className="text-blue-200 text-sm mt-1"></p>
+          {/* Avatar */}
+          <div className="flex justify-center mb-4">
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt="Perfil"
+                className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg"
+              />
+            ) : (
+              <div className={`w-20 h-20 rounded-full ${isFeminino ? 'bg-pink-400' : 'bg-slate-600'} flex items-center justify-center border-4 border-white shadow-lg`}>
+                <span className="text-white text-2xl">👤</span>
+              </div>
+            )}
+          </div>
+          <h1 className="text-2xl font-bold text-center">DashBoard</h1>
+          <p className="text-blue-200 text-sm mt-1 text-center"></p>
         </div>
 
         {/* Menu Items */}
@@ -57,21 +73,8 @@ export default function Sidebar({ activeTab, setActiveTab, transactions, categor
           })}
         </nav>
 
-        {/* Backup Section */}
-        <div className="p-4 border-t border-blue-900 mt-4">
-          <p className="text-blue-100 text-xs font-semibold uppercase mb-3 text-center">
-            Backup
-          </p>
-          <BackupManager
-            transactions={transactions}
-            categories={categories}
-            onImport={onImport}
-            password={localStorage.getItem('dash-password-hash')}
-          />
-        </div>
-
         {/* Logout Button */}
-        <div className="p-4 border-t border-blue-900">
+        <div className="p-4 border-t border-blue-900 mt-auto">
           <button
             onClick={onLogout}
             className="w-full flex items-center gap-3 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-medium"

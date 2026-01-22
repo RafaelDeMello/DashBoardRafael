@@ -3,6 +3,7 @@ import { Plus, Trash2 } from 'lucide-react'
 
 export default function TransactionForm({
   categories,
+  creditCards = [],
   onAddTransaction,
   onAddCategory,
   onDeleteCategory,
@@ -12,6 +13,7 @@ export default function TransactionForm({
     value: '',
     date: new Date().toISOString().split('T')[0],
     description: '',
+    credit_card_id: null,
   })
 
   const [newCategory, setNewCategory] = useState({
@@ -50,10 +52,12 @@ export default function TransactionForm({
 
     if (!formData.value) {
       newErrors.value = 'Valor é obrigatório'
+    } else if (isNaN(parseFloat(formData.value))) {
+      newErrors.value = 'Valor deve ser um número válido'
     } else if (parseFloat(formData.value) <= 0) {
       newErrors.value = 'Valor deve ser maior que zero'
     } else if (parseFloat(formData.value) > 999999.99) {
-      newErrors.value = 'Valor muito alto'
+      newErrors.value = 'Valor não pode exceder R$ 999.999,99'
     }
 
     if (!formData.category) {
@@ -62,6 +66,14 @@ export default function TransactionForm({
 
     if (!formData.date) {
       newErrors.date = 'Data é obrigatória'
+    } else {
+      const selectedDate = new Date(formData.date)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
+      if (selectedDate > today) {
+        newErrors.date = 'Não é possível adicionar despesas futuras'
+      }
     }
 
     if (formData.description && formData.description.length > 255) {
@@ -89,6 +101,7 @@ export default function TransactionForm({
       value: '',
       date: new Date().toISOString().split('T')[0],
       description: '',
+      credit_card_id: null,
     })
   }
 
@@ -208,6 +221,33 @@ export default function TransactionForm({
                 <p className="text-red-600 text-xs mt-1">{errors.description}</p>
               )}
             </div>
+
+            {/* Credit Card (if available) */}
+            {creditCards.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Pagar com (opcional)
+                </label>
+                <select
+                  name="credit_card_id"
+                  value={formData.credit_card_id || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      credit_card_id: e.target.value ? e.target.value : null,
+                    })
+                  }
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                >
+                  <option value="">💰 Dinheiro / Débito</option>
+                  {creditCards.map((card) => (
+                    <option key={card.id} value={card.id}>
+                      💳 {card.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           <button

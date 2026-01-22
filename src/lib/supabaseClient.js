@@ -1,0 +1,39 @@
+import { createClient } from '@supabase/supabase-js'
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+console.log('=== Supabase Config Debug ===')
+console.log('VITE_SUPABASE_URL:', SUPABASE_URL)
+console.log('VITE_SUPABASE_ANON_KEY:', SUPABASE_KEY ? SUPABASE_KEY.substring(0, 20) + '...' : 'undefined')
+
+let supabase
+
+try {
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    throw new Error('Credenciais do Supabase não configuradas no .env')
+  }
+  
+  supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+  console.log('✓ Supabase inicializado com sucesso')
+} catch (error) {
+  console.error('✗ Erro ao inicializar Supabase:', error.message)
+  // Criar mock para evitar crashes
+  supabase = {
+    auth: {
+      getUser: async () => ({ data: { user: null } }),
+      signUp: async () => ({ data: null, error: new Error('Supabase não configurado') }),
+      signInWithPassword: async () => ({ data: null, error: new Error('Supabase não configurado') }),
+      signOut: async () => ({}),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+    },
+    from: () => ({
+      select: () => ({ eq: () => ({ order: () => ({ data: null, error: null }) }) }),
+      insert: () => ({ select: () => ({ data: null, error: null }) }),
+      update: () => ({ eq: () => ({ select: () => ({ data: null, error: null }) }) }),
+      delete: () => ({ eq: () => ({ data: null, error: null }) }),
+    }),
+  }
+}
+
+export { supabase }

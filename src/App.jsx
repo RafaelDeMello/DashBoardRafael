@@ -1,69 +1,118 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import Dashboard from './components/Dashboard'
-import Login from './components/Login'
+import LoginSupabase from './components/LoginSupabase'
+import LoadingSplash from './components/LoadingSplash'
+import ErrorBoundary from './components/ErrorBoundary'
+import { supabase } from './lib/supabaseClient'
+import useStore from './storeSupabase'
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [password, setPassword] = useState('')
+  const [user, setUser] = useState(null)
+  const [gender, setGender] = useState(null)
+  const [avatarUrl, setAvatarUrl] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [showSplash, setShowSplash] = useState(false)
+  const [splashTimer, setSplashTimer] = useState(null)
+  const loadUserProfile = useStore((state) => state.loadUserProfile)
 
   useEffect(() => {
-    // Limpar dados antigos com cores antigas (migração)
-    try {
-      const savedCategories = localStorage.getItem('dash-categories')
-      if (savedCategories) {
-        let parsed
-        try {
-          parsed = JSON.parse(savedCategories)
-        } catch {
-          // Se for criptografado, remove para recarregar
-          localStorage.removeItem('dash-categories')
+    let isMounted = true
+
+    const checkUser = async () => {
+      try {
+        console.log('🔍 Verificando usuário...')
+        const { data: { user }, error } = await supabase.auth.getUser()
+        
+        if (error) {
+          console.error('Erro ao obter usuário:', error)
+          if (isMounted) setIsLoading(false)
           return
         }
-        
-        const colorMap = {
-          '#FF6B6B': '#1e293b',
-          '#4ECDC4': '#334155',
-          '#95E1D3': '#475569',
-          '#F7B731': '#64748b',
-          '#fbcfe8': '#64748b',
+
+        if (isMounted) {
+          setUser(user)
+          console.log('✓ Usuário:', user?.email || 'Sem login')
+          setIsLoading(false)
         }
-        
-        const hasOldColors = parsed.some(cat => colorMap[cat.color])
-        if (hasOldColors) {
-          // Atualiza as cores e salva de volta
-          const updated = parsed.map(cat => ({
-            ...cat,
-            color: colorMap[cat.color] || cat.color
-          }))
-          localStorage.setItem('dash-categories', JSON.stringify(updated))
+      } catch (err) {
+        console.error('Erro na verificação:', err)
+        if (isMounted) setIsLoading(false)
+      }
+    }
+
+    // Timeout de segurança
+    const timeoutId = setTimeout(() => {
+      if (isMounted) {
+        console.warn('⚠ Timeout ao carregar usuário')
+        setIsLoading(false)
+      }
+    }, 5000)
+
+    checkUser()
+
+    // Listener para mudanças de autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('🔄 Auth event:', event)
+        if (!isMounted) return
+
+        setUser(session?.user || null)
+        if (session?.user?.id) {
+          console.log('✓ Usuário autenticado:', session.user.id)
+          // Mostrar splash por 2 segundos apenas
+          setShowSplash(true)
+          
+          const timer = setTimeout(() => {
+            if (isMounted) {
+              console.log('✓ Saindo do splash')
+              setShowSplash(false)
+            }
+          }, 2000)
+          setSplashTimer(timer)
+        } else {
+          setGender(null)
+          setAvatarUrl(null)
+          setShowSplash(false)
+          if (splashTimer) clearTimeout(splashTimer)
         }
       }
-    } catch (e) {
-      console.log('Erro ao verificar cores antigas:', e)
+    )
+
+    return () => {
+      isMounted = false
+      clearTimeout(timeoutId)
+      subscription?.unsubscribe()
     }
-    
-    // Verificar se há uma senha salva no primeiro carregamento
-    const savedHash = localStorage.getItem('dash-password-hash')
-    if (savedHash) {
-      // Há uma senha salva, então não está autenticado ainda
-      setIsAuthenticated(false)
-    } else {
-      // Primeira vez, precisa criar senha
-      setIsAuthenticated(false)
-    }
-    setIsLoading(false)
   }, [])
 
-  const handleLogin = (pwd) => {
-    setPassword(pwd)
-    setIsAuthenticated(true)
-  }
+  // Carregar perfil quando usuário muda (em background)
+  useEffect(() => {
+    let isMounted = true
 
-  const handleLogout = () => {
-    setPassword('')
-    setIsAuthenticated(false)
+    if (user?.id) {
+      console.log('📥 Carregando perfil do usuário...')
+      loadUserProfile(user.id).then(() => {
+        if (isMounted) {
+          const userProfile = useStore.getState().userProfile
+          console.log('✓ Perfil carregado no App:', userProfile)
+          setGender(userProfile?.gender)
+          setAvatarUrl(userProfile?.avatar_url)
+        }
+      }).catch(err => {
+        console.error('Erro ao carregar perfil:', err)
+      })
+    }
+
+    return () => {
+      isMounted = false
+    }
+  }, [user?.id, loadUserProfile])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    useStore.getState().clearData()
+    setUser(null)
   }
 
   if (isLoading) {
@@ -77,14 +126,20 @@ function App() {
     )
   }
 
+  if (showSplash && user) {
+    return <LoadingSplash avatarUrl={avatarUrl} gender={gender} />
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {!isAuthenticated ? (
-        <Login onLogin={handleLogin} />
-      ) : (
-        <Dashboard password={password} onLogout={handleLogout} />
-      )}
-    </div>
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gray-50">
+        {!user ? (
+          <LoginSupabase onLogin={setUser} />
+        ) : (
+          <Dashboard user={user} gender={gender} onLogout={handleLogout} />
+        )}
+      </div>
+    </ErrorBoundary>
   )
 }
 

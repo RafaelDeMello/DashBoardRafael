@@ -6,111 +6,71 @@ import TransactionHistory from './TransactionHistory'
 import TabContent from './TabContent'
 import ChartsDashboard from './Charts'
 import EditTransactionForm from './EditTransactionForm'
-import { encryptData, decryptData } from '../utils/encryption'
+import CreditCardsManager from './CreditCardsManager'
+import InvoicesPanel from './InvoicesPanel'
+import useStore from '../storeSupabase'
 
-export default function Dashboard({ password, onLogout }) {
+export default function Dashboard({ user, gender, onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard')
-  const [transactions, setTransactions] = useState([])
   const [successMessage, setSuccessMessage] = useState(null)
-  const [recentlyAdded, setRecentlyAdded] = useState([])
   const [editingTransaction, setEditingTransaction] = useState(null)
-  const [categories, setCategories] = useState([
-    { id: '1', name: 'Aluguel', color: '#475569', isFixed: true },
-    { id: '2', name: 'Alimentação', color: '#1e293b', isFixed: false },
-    { id: '3', name: 'Saúde/Academia', color: '#0f172a', isFixed: false },
-    { id: '4', name: 'Gasolina', color: '#334155', isFixed: false },
-    { id: '5', name: 'Outros', color: '#64748b', isFixed: false },
-  ])
-  const [isLoaded, setIsLoaded] = useState(false)
-  // Função para migrar cores antigas para cinzas
-  const migrateColors = (cats) => {
-    const colorMap = {
-      '#FF6B6B': '#1e293b',      // vermelho → azul escuro
-      '#4ECDC4': '#334155',      // turquesa → azul acinzentado
-      '#95E1D3': '#475569',      // menta → cinza azulado
-      '#F7B731': '#64748b',      // amarelo → cinza azul
-      '#fbcfe8': '#64748b',      // rosa muito claro → cinza
-    }
-    return cats.map(cat => ({
-      ...cat,
-      color: colorMap[cat.color] || cat.color
-    }))
-  }
+  const [localGender, setLocalGender] = useState(gender)
+  const [localAvatarUrl, setLocalAvatarUrl] = useState(null)
+  
+  // Tema baseado no gênero
+  const isFeminino = localGender === 'feminino'
+  const bgColor = isFeminino ? 'bg-pink-50' : 'bg-slate-50'
+  const sidebarBg = isFeminino ? 'bg-gradient-to-b from-pink-700 to-pink-800' : 'bg-gradient-to-b from-slate-800 to-slate-900'
+  const accentColor = isFeminino ? 'text-pink-700' : 'text-slate-700'
+  const buttonBg = isFeminino ? 'bg-pink-600 hover:bg-pink-700' : 'bg-slate-700 hover:bg-slate-800'
+  const cardBg = isFeminino ? 'bg-pink-100' : 'bg-slate-100'
+  
+  const transactions = useStore((state) => state.transactions)
+  const categories = useStore((state) => state.categories)
+  const creditCards = useStore((state) => state.creditCards)
+  const isLoading = useStore((state) => state.isLoading)
+  const addTransaction = useStore((state) => state.addTransaction)
+  const removeTransaction = useStore((state) => state.removeTransaction)
+  const updateTransaction = useStore((state) => state.updateTransaction)
+  const addCategory = useStore((state) => state.addCategory)
+  const removeCategory = useStore((state) => state.removeCategory)
+  const loadTransactions = useStore((state) => state.loadTransactions)
+  const loadCategories = useStore((state) => state.loadCategories)
+  const loadCreditCards = useStore((state) => state.loadCreditCards)
+  const loadUserProfile = useStore((state) => state.loadUserProfile)
 
-  // Load data from localStorage
+  // Carregar dados e perfil quando usuário muda
   useEffect(() => {
+    if (user?.id) {
+      // Carregar categorias e transações
+      loadCategories(user.id)
+      loadTransactions(user.id)
+      loadCreditCards(user.id)
+      
+      // Carregar perfil em background (sem bloquear a UI)
+      loadUserProfile(user.id).then(() => {
+        const userProfile = useStore.getState().userProfile
+        if (userProfile) {
+          setLocalGender(userProfile.gender)
+          setLocalAvatarUrl(userProfile.avatar_url)
+          console.log('✓ Perfil carregado no Dashboard:', userProfile)
+        }
+      }).catch(err => {
+        console.error('Erro ao carregar perfil:', err)
+      })
+    }
+  }, [user?.id])
+
+  const handleAddTransaction = async (transaction) => {
     try {
-      const savedTransactions = localStorage.getItem('dash-transactions')
-      const savedCategories = localStorage.getItem('dash-categories')
-
-      if (savedTransactions) {
-        try {
-          const decrypted = decryptData(savedTransactions, password)
-          if (decrypted) {
-            setTransactions(decrypted)
-          } else {
-            setTransactions([])
-          }
-        } catch (e) {
-          // Se não conseguir descriptografar, trata como JSON simples (compatibilidade com versão antiga)
-          setTransactions(JSON.parse(savedTransactions))
-        }
-      }
-      if (savedCategories) {
-        try {
-          const decrypted = decryptData(savedCategories, password)
-          if (decrypted) {
-            setCategories(migrateColors(decrypted))
-          }
-        } catch (e) {
-          // Se não conseguir descriptografar, trata como JSON simples
-          const parsed = JSON.parse(savedCategories)
-          setCategories(migrateColors(parsed))
-        }
-      }
-      setIsLoaded(true)
+      await addTransaction(transaction)
+      setSuccessMessage(transaction)
     } catch (error) {
-      console.error('Erro ao carregar dados do localStorage:', error)
-      setIsLoaded(true)
+      console.error('Erro ao adicionar transação:', error)
     }
-  }, [password])
-
-  // Save transactions to localStorage (criptografado)
-  useEffect(() => {
-    if (isLoaded) {
-      const encrypted = encryptData(transactions, password)
-      if (encrypted) {
-        localStorage.setItem('dash-transactions', encrypted)
-      }
-    }
-  }, [transactions, isLoaded, password])
-
-  // Save categories to localStorage (criptografado)
-  useEffect(() => {
-    if (isLoaded) {
-      const encrypted = encryptData(categories, password)
-      if (encrypted) {
-        localStorage.setItem('dash-categories', encrypted)
-      }
-    }
-  }, [categories, isLoaded, password])
-
-  const handleAddTransaction = (transaction) => {
-    const newTransaction = {
-      ...transaction,
-      id: Date.now().toString(),
-      timestamp: Date.now(),
-    }
-    setTransactions((prev) => [...prev, newTransaction])
-    
-    // Mostrar modal de sucesso
-    setSuccessMessage(newTransaction)
   }
 
   const handleCloseSuccessModal = () => {
-    if (successMessage) {
-      setRecentlyAdded((prev) => [successMessage, ...prev])
-    }
     setSuccessMessage(null)
   }
 
@@ -118,68 +78,58 @@ export default function Dashboard({ password, onLogout }) {
     setEditingTransaction(transaction)
   }
 
-  const handleSaveEditTransaction = (updatedTransaction) => {
-    setTransactions((prev) =>
-      prev.map((t) => (t.id === updatedTransaction.id ? updatedTransaction : t))
-    )
-    // Atualizar também na lista de recentes se estiver lá
-    setRecentlyAdded((prev) =>
-      prev.map((t) => (t.id === updatedTransaction.id ? updatedTransaction : t))
-    )
-    setEditingTransaction(null)
+  const handleSaveEditTransaction = async (updatedTransaction) => {
+    try {
+      await updateTransaction(updatedTransaction.id, {
+        date: updatedTransaction.date,
+        category: updatedTransaction.category,
+        value: updatedTransaction.value,
+        description: updatedTransaction.description,
+      })
+      setEditingTransaction(null)
+    } catch (error) {
+      console.error('Erro ao atualizar transação:', error)
+    }
   }
 
   const handleCancelEdit = () => {
     setEditingTransaction(null)
   }
 
-  const handleDeleteTransaction = (id) => {
+  const handleDeleteTransaction = async (id) => {
     if (window.confirm('Tem certeza que deseja deletar esta transação?')) {
-      setTransactions((prev) => prev.filter((t) => t.id !== id))
-      // Remove também da lista de recentemente adicionadas
-      setRecentlyAdded((prev) => prev.filter((t) => t.id !== id))
+      try {
+        await removeTransaction(id)
+      } catch (error) {
+        console.error('Erro ao deletar transação:', error)
+      }
     }
   }
 
-  const handleAddCategory = (category) => {
-    setCategories((prev) => [
-      ...prev,
-      {
-        ...category,
-        id: Date.now().toString(),
-        isFixed: false,
-      },
-    ])
+  const handleAddCategory = async (category) => {
+    try {
+      await addCategory(category)
+    } catch (error) {
+      console.error('Erro ao adicionar categoria:', error)
+    }
   }
 
-  const handleDeleteCategory = (id) => {
+  const handleDeleteCategory = async (id) => {
     if (
       window.confirm(
         'Tem certeza que deseja deletar esta categoria? As transações não serão deletadas.'
       )
     ) {
-      setCategories((prev) => prev.filter((c) => c.id !== id))
+      try {
+        await removeCategory(id)
+      } catch (error) {
+        console.error('Erro ao deletar categoria:', error)
+      }
     }
   }
 
-  const handleImportData = (data) => {
-    // Adicionar IDs aos transactions e categories se não tiverem
-    const importedTransactions = data.transactions.map((t) => ({
-      ...t,
-      id: t.id || Date.now().toString(),
-    }))
-
-    const importedCategories = data.categories.map((c) => ({
-      ...c,
-      id: c.id || Date.now().toString(),
-    }))
-
-    setTransactions(importedTransactions)
-    setCategories(importedCategories)
-  }
-
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50">
+    <div className={`flex h-screen overflow-hidden ${bgColor}`}>
       {/* Success Modal */}
       {successMessage && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -211,7 +161,7 @@ export default function Dashboard({ password, onLogout }) {
 
               <button
                 onClick={handleCloseSuccessModal}
-                className="w-full bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2 rounded-lg transition-colors"
+                className={`w-full text-white font-semibold py-2 rounded-lg transition-colors ${buttonBg}`}
               >
                 Fechar
               </button>
@@ -239,10 +189,10 @@ export default function Dashboard({ password, onLogout }) {
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        transactions={transactions}
-        categories={categories}
-        onImport={handleImportData}
         onLogout={onLogout}
+        sidebarBg={sidebarBg}
+        avatarUrl={localAvatarUrl}
+        gender={localGender}
       />
 
       {/* Main Content */}
@@ -252,7 +202,7 @@ export default function Dashboard({ password, onLogout }) {
           {activeTab === 'dashboard' && (
             <>
               <h1 className="text-4xl font-bold text-gray-900 mb-8">Dashboard</h1>
-              <SummaryCards transactions={transactions} categories={categories} />
+              <SummaryCards transactions={transactions} categories={categories} gender={localGender} creditCards={creditCards} />
 
               {/* Charts Section */}
               <ChartsDashboard transactions={transactions} categories={categories} />
@@ -267,6 +217,7 @@ export default function Dashboard({ password, onLogout }) {
                 categories={categories}
                 onDelete={handleDeleteTransaction}
                 onEdit={handleEditTransaction}
+                gender={localGender}
               />
             </TabContent>
           )}
@@ -277,50 +228,27 @@ export default function Dashboard({ password, onLogout }) {
               <TabContent title="Adicionar Despesa">
                 <TransactionForm
                   categories={categories}
+                  creditCards={creditCards}
                   onAddTransaction={handleAddTransaction}
                   onAddCategory={handleAddCategory}
                   onDeleteCategory={handleDeleteCategory}
                 />
               </TabContent>
-
-              {/* Recently Added */}
-              {recentlyAdded.length > 0 && (
-                <div className="bg-white rounded-lg shadow-lg p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Despesas Adicionadas Recentemente</h3>
-                  <div className="space-y-3">
-                    {recentlyAdded.map((item) => {
-                      const cat = categories.find((c) => c.name === item.category)
-                      return (
-                        <div key={item.id} className="flex items-center justify-between p-4 border-2 border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-                          <div className="flex items-center gap-3 flex-1">
-                            <div
-                              className="w-4 h-4 rounded-full"
-                              style={{ backgroundColor: cat?.color }}
-                            />
-                            <div>
-                              <p className="font-semibold text-gray-900">{item.category}</p>
-                              <p className="text-sm text-gray-600">
-                                {new Date(item.date).toLocaleDateString('pt-BR')} 
-                                {item.description ? ` • ${item.description}` : ''}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <p className="font-bold text-slate-300">R$ {item.value.toFixed(2)}</p>
-                            <button
-                              onClick={() => setActiveTab('transactions')}
-                              className="bg-slate-800 hover:bg-slate-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm"
-                            >
-                              Ver Despesas →
-                            </button>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
             </div>
+          )}
+
+          {/* Credit Cards Tab */}
+          {activeTab === 'credit_cards' && (
+            <TabContent title="Gerenciar Cartões de Crédito">
+              <CreditCardsManager gender={localGender} />
+            </TabContent>
+          )}
+
+          {/* Invoices Tab */}
+          {activeTab === 'invoices' && (
+            <TabContent title="Faturas">
+              <InvoicesPanel gender={localGender} />
+            </TabContent>
           )}
         </div>
       </main>

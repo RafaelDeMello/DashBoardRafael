@@ -11,6 +11,7 @@
     "lint:fix": "eslint . --ext .js,.jsx --fix"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.91.0",
     "clsx": "^2.0.0",
     "crypto-js": "^4.2.0",
     "lucide-react": "^0.294.0",
