@@ -9,7 +9,7 @@ export default function TransactionForm({
   onDeleteCategory,
 }) {
   const [formData, setFormData] = useState({
-    category: categories[0]?.name || '',
+    category: categories.filter(c => !c.type || c.type === 'expense')[0]?.name || '',
     value: '',
     date: new Date().toISOString().split('T')[0],
     description: '',
@@ -23,6 +23,9 @@ export default function TransactionForm({
 
   const [showCategoryForm, setShowCategoryForm] = useState(false)
   const [errors, setErrors] = useState({})
+
+  // Filtrar apenas categorias de despesa
+  const expenseCategories = categories.filter(c => !c.type || c.type === 'expense')
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -94,10 +97,11 @@ export default function TransactionForm({
     onAddTransaction({
       ...formData,
       value: parseFloat(formData.value),
+      type: 'expense',
     })
 
     setFormData({
-      category: categories[0]?.name || '',
+      category: expenseCategories[0]?.name || '',
       value: '',
       date: new Date().toISOString().split('T')[0],
       description: '',
@@ -125,7 +129,10 @@ export default function TransactionForm({
       return
     }
 
-    onAddCategory(newCategory)
+    onAddCategory({
+      ...newCategory,
+      type: 'expense',
+    })
     setNewCategory({
       name: '',
       color: '#3b82f6',
@@ -153,7 +160,7 @@ export default function TransactionForm({
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
               >
-                {categories.map((cat) => (
+                {expenseCategories.map((cat) => (
                   <option key={cat.id} value={cat.name}>
                     {cat.name}
                   </option>

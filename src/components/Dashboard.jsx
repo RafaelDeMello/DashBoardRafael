@@ -3,6 +3,8 @@ import Sidebar from './Sidebar'
 import SummaryCards from './SummaryCards'
 import TransactionForm from './TransactionForm'
 import TransactionHistory from './TransactionHistory'
+import IncomeForm from './IncomeForm'
+import IncomeHistory from './IncomeHistory'
 import TabContent from './TabContent'
 import ChartsDashboard from './Charts'
 import EditTransactionForm from './EditTransactionForm'
@@ -30,9 +32,15 @@ export default function Dashboard({ user, gender, onLogout }) {
   const creditCards = useStore((state) => state.creditCards)
   const isLoading = useStore((state) => state.isLoading)
   const addTransaction = useStore((state) => state.addTransaction)
+  const addIncome = useStore((state) => state.addIncome)
   const removeTransaction = useStore((state) => state.removeTransaction)
   const updateTransaction = useStore((state) => state.updateTransaction)
   const addCategory = useStore((state) => state.addCategory)
+
+  // debug: log categories whenever mudam
+  useEffect(() => {
+    console.log('📂 categorias atualizadas no Dashboard:', categories)
+  }, [categories])
   const removeCategory = useStore((state) => state.removeCategory)
   const loadTransactions = useStore((state) => state.loadTransactions)
   const loadCategories = useStore((state) => state.loadCategories)
@@ -67,6 +75,16 @@ export default function Dashboard({ user, gender, onLogout }) {
       setSuccessMessage(transaction)
     } catch (error) {
       console.error('Erro ao adicionar transação:', error)
+    }
+  }
+
+  const handleAddIncome = async (income) => {
+    console.log('🏁 handleAddIncome chamado', income)
+    try {
+      await addIncome(income)
+      setSuccessMessage({ ...income, isIncome: true })
+    } catch (error) {
+      console.error('Erro ao adicionar receita:', error)
     }
   }
 
@@ -136,8 +154,10 @@ export default function Dashboard({ user, gender, onLogout }) {
           <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full">
             <div className="text-center">
               <div className="text-5xl mb-4">✓</div>
-              <h2 className="text-2xl font-bold text-green-600 mb-6">Despesa adicionada com sucesso!</h2>
-              
+              <h2 className={`text-2xl font-bold ${successMessage.isIncome ? 'text-green-600' : 'text-red-600'} mb-6`}>
+                {successMessage.isIncome ? 'Receita adicionada com sucesso!' : 'Despesa adicionada com sucesso!'}
+              </h2>
+
               <div className="bg-slate-50 p-4 rounded-lg mb-6 text-left space-y-3">
                 <p className="text-sm">
                   <span className="font-semibold text-gray-700">Categoria:</span>
@@ -145,7 +165,9 @@ export default function Dashboard({ user, gender, onLogout }) {
                 </p>
                 <p className="text-sm">
                   <span className="font-semibold text-gray-700">Valor:</span>
-                  <span className="ml-2 text-gray-900 font-bold text-lg">R$ {successMessage.value.toFixed(2)}</span>
+                  <span className={`ml-2 font-bold text-lg ${successMessage.isIncome ? 'text-green-600' : 'text-red-600'}`}>
+                    {successMessage.isIncome ? '+' : '-'} R$ {successMessage.value.toFixed(2)}
+                  </span>
                 </p>
                 <p className="text-sm">
                   <span className="font-semibold text-gray-700">Data:</span>
@@ -220,6 +242,28 @@ export default function Dashboard({ user, gender, onLogout }) {
                 gender={localGender}
               />
             </TabContent>
+          )}
+
+          {/* Income Tab */}
+          {activeTab === 'income' && (
+            <div className="space-y-6">
+              <TabContent title="Adicionar Receita">
+                <IncomeForm
+                  categories={categories}
+                  onAddIncome={handleAddIncome}
+                  onAddCategory={handleAddCategory}
+                />
+              </TabContent>
+              <TabContent title="Histórico de Receitas">
+                <IncomeHistory
+                  transactions={transactions}
+                  categories={categories}
+                  onDelete={handleDeleteTransaction}
+                  onEdit={handleEditTransaction}
+                  gender={localGender}
+                />
+              </TabContent>
+            </div>
           )}
 
           {/* Categories Tab */}

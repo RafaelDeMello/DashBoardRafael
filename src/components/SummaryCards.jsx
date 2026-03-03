@@ -1,19 +1,35 @@
-import { Clock, TrendingDown, TrendingUp, CreditCard } from 'lucide-react'
+import { Clock, TrendingDown, TrendingUp, CreditCard, DollarSign } from 'lucide-react'
 
 export default function SummaryCards({ transactions, categories, gender, creditCards = [] }) {
   const isFeminino = gender === 'feminino'
   
-  // Calcula o total gasto
-  const totalSpent = transactions.reduce((sum, t) => sum + t.value, 0)
+  // Calcula total de despesas
+  const totalExpenses = transactions
+    .filter(t => !t.type || t.type === 'expense')
+    .reduce((sum, t) => sum + t.value, 0)
 
-  // Calcula o total do mês atual
+  // Calcula total de receitas
+  const totalIncome = transactions
+    .filter(t => t.type === 'income')
+    .reduce((sum, t) => sum + t.value, 0)
+
+  // Calcula saldo
+  const balance = totalIncome - totalExpenses
+
+  // Calcula o total do mês atual (despesas)
   const currentMonth = new Date().getMonth()
   const currentYear = new Date().getFullYear()
   const monthlyTransactions = transactions.filter((t) => {
     const date = new Date(t.date)
     return date.getMonth() === currentMonth && date.getFullYear() === currentYear
   })
-  const monthlyTotal = monthlyTransactions.reduce((sum, t) => sum + t.value, 0)
+  const monthlyExpenses = monthlyTransactions
+    .filter(t => !t.type || t.type === 'expense')
+    .reduce((sum, t) => sum + t.value, 0)
+
+  const monthlyIncome = monthlyTransactions
+    .filter(t => t.type === 'income')
+    .reduce((sum, t) => sum + t.value, 0)
 
   // Calcula total em cartões de crédito (mês atual)
   const creditCardTotal = monthlyTransactions
@@ -27,30 +43,31 @@ export default function SummaryCards({ transactions, categories, gender, creditC
   const primaryColor = isFeminino ? 'from-pink-500 to-pink-600' : 'from-slate-600 to-slate-700'
   const secondaryColor = isFeminino ? 'from-rose-400 to-rose-500' : 'from-slate-500 to-slate-600'
   const tertiaryColor = isFeminino ? 'from-purple-400 to-purple-500' : 'from-slate-700 to-slate-800'
+  const successColor = 'from-green-500 to-green-600'
   const textPrimary = isFeminino ? 'text-pink-700' : 'text-slate-700'
   const textSecondary = isFeminino ? 'text-rose-600' : 'text-slate-600'
 
   const cards = [
     {
-      title: 'Total Gasto',
-      value: `R$ ${totalSpent.toFixed(2)}`,
-      icon: TrendingDown,
-      gradient: primaryColor,
-      subtext: `${transactionCount} transações`,
+      title: 'Saldo Total',
+      value: `R$ ${balance.toFixed(2)}`,
+      icon: DollarSign,
+      gradient: balance >= 0 ? successColor : primaryColor,
+      subtext: `Receitas: R$ ${totalIncome.toFixed(2)}`,
     },
     {
       title: 'Este Mês',
-      value: `R$ ${monthlyTotal.toFixed(2)}`,
+      value: `R$ ${(monthlyIncome - monthlyExpenses).toFixed(2)}`,
       icon: Clock,
       gradient: secondaryColor,
-      subtext: `${monthlyTransactions.length} despesas`,
+      subtext: `Receita: R$ ${monthlyIncome.toFixed(2)} | Despesa: R$ ${monthlyExpenses.toFixed(2)}`,
     },
     {
-      title: 'Cartões de Crédito',
-      value: `R$ ${creditCardTotal.toFixed(2)}`,
-      icon: CreditCard,
+      title: 'Total Gasto',
+      value: `R$ ${totalExpenses.toFixed(2)}`,
+      icon: TrendingDown,
       gradient: tertiaryColor,
-      subtext: `${monthlyTransactions.filter((t) => t.credit_card_id).length} em cartão`,
+      subtext: `${transactionCount} transações`,
     },
   ]
 

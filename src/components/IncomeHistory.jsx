@@ -1,6 +1,6 @@
 import { Trash2, Edit2 } from 'lucide-react'
 
-export default function TransactionHistory({
+export default function IncomeHistory({
   transactions,
   categories,
   onDelete,
@@ -8,31 +8,31 @@ export default function TransactionHistory({
   gender,
 }) {
   const isFeminino = gender === 'feminino'
-  const hoverBg = isFeminino ? 'hover:bg-pink-50' : 'hover:bg-slate-50'
-  const accentColor = isFeminino ? 'text-pink-600' : 'text-slate-600'
-  const headerBg = isFeminino ? 'bg-pink-50 border-pink-200' : 'bg-slate-50 border-slate-200'
+  const hoverBg = isFeminino ? 'hover:bg-green-50' : 'hover:bg-green-50'
+  const accentColor = 'text-green-600'
+  const headerBg = 'bg-green-50 border-green-200'
 
-  // Filtrar apenas despesas
-  const expenseTransactions = transactions.filter(t => !t.type || t.type === 'expense')
+  // Filtrar apenas receitas
+  const incomeTransactions = transactions.filter(t => t.type === 'income')
 
-  if (expenseTransactions.length === 0) {
+  if (incomeTransactions.length === 0) {
     return (
       <div className="text-center py-16">
-        <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${isFeminino ? 'bg-pink-100' : 'bg-slate-100'} mb-4`}>
-          <span className="text-3xl">📊</span>
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
+          <span className="text-3xl">💵</span>
         </div>
-        <p className={`text-lg font-semibold ${accentColor} mb-2`}>
-          Nenhuma despesa registrada
+        <p className="text-lg font-semibold text-green-600 mb-2">
+          Nenhuma receita registrada
         </p>
         <p className="text-gray-500 text-sm">
-          Adicione uma despesa para começar
+          Adicione uma receita para começar
         </p>
       </div>
     )
   }
 
   // Ordena por data mais recente
-  const sortedTransactions = [...expenseTransactions].sort(
+  const sortedTransactions = [...incomeTransactions].sort(
     (a, b) => new Date(b.date) - new Date(a.date)
   )
 
@@ -74,7 +74,7 @@ export default function TransactionHistory({
                 <td className="px-6 py-4">
                   <span
                     className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-white"
-                    style={{ backgroundColor: category?.color || '#999' }}
+                    style={{ backgroundColor: category?.color || '#10b981' }}
                   >
                     {transaction.category}
                   </span>
@@ -85,15 +85,15 @@ export default function TransactionHistory({
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <span className={`text-sm font-bold ${accentColor}`}>
-                    -R$ {transaction.value.toFixed(2)}
+                  <span className="text-sm font-bold text-green-600">
+                    +R$ {transaction.value.toFixed(2)}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-center">
                   <div className="flex items-center justify-center gap-1">
                     <button
                       onClick={() => onEdit(transaction)}
-                      className={`p-2 rounded-lg transition-colors ${isFeminino ? 'hover:bg-pink-100' : 'hover:bg-slate-100'}`}
+                      className="p-2 rounded-lg hover:bg-green-100 transition-colors"
                       title="Editar"
                     >
                       <Edit2 size={18} className={accentColor} />
@@ -115,4 +115,3 @@ export default function TransactionHistory({
     </div>
   )
 }
-

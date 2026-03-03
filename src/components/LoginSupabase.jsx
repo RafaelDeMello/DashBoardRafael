@@ -6,8 +6,6 @@ export default function Login({ onLogin }) {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [gender, setGender] = useState('')
-  const [avatarFile, setAvatarFile] = useState(null)
-  const [avatarPreview, setAvatarPreview] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isSignUp, setIsSignUp] = useState(false)
   const [error, setError] = useState('')
@@ -51,11 +49,6 @@ export default function Login({ onLogin }) {
         return
       }
 
-      if (!avatarFile) {
-        setError('Foto de perfil é obrigatória')
-        return
-      }
-
       if (password.length < 6) {
         setError('Senha deve ter pelo menos 6 caracteres')
         return
@@ -78,32 +71,10 @@ export default function Login({ onLogin }) {
 
       // Criar perfil do usuário
       if (data.user) {
-        // Upload da imagem
-        let avatarUrl = null
-        if (avatarFile) {
-          const fileExt = avatarFile.name.split('.').pop()
-          const fileName = `${data.user.id}.${fileExt}`
-          
-          console.log('📤 Fazendo upload da imagem:', fileName)
-          const { error: uploadError } = await supabase.storage
-            .from('avatars')
-            .upload(fileName, avatarFile, { upsert: true })
-          
-          if (uploadError) {
-            console.error('Erro ao fazer upload da imagem:', uploadError)
-          } else {
-            const { data: urlData } = supabase.storage
-              .from('avatars')
-              .getPublicUrl(fileName)
-            avatarUrl = urlData.publicUrl
-            console.log('✓ URL da imagem:', avatarUrl)
-          }
-        }
-
-        console.log('💾 Salvando perfil com avatar_url:', avatarUrl)
+        console.log('💾 Salvando perfil do usuário')
         const { error: profileError } = await supabase
           .from('profiles')
-          .insert([{ id: data.user.id, email, gender, avatar_url: avatarUrl }])
+          .insert([{ id: data.user.id, email, gender }])
 
         if (profileError) {
           console.error('Erro ao criar perfil:', profileError)
@@ -111,14 +82,20 @@ export default function Login({ onLogin }) {
           console.log('✓ Perfil criado com sucesso')
         }
 
-        // Criar categorias padrão
+        // Criar categorias padrão (despesas)
         const defaultCategories = [
-          { user_id: data.user.id, name: 'Aluguel', color: '#1e293b', is_fixed: true },
-          { user_id: data.user.id, name: 'Alimentação', color: '#334155', is_fixed: false },
-          { user_id: data.user.id, name: 'Saúde', color: '#0ea5e9', is_fixed: false },
-          { user_id: data.user.id, name: 'Academia', color: '#06b6d4', is_fixed: false },
-          { user_id: data.user.id, name: 'Transporte', color: '#f59e0b', is_fixed: false },
-          { user_id: data.user.id, name: 'Outros', color: '#8b5cf6', is_fixed: false },
+          { user_id: data.user.id, name: 'Aluguel', color: '#1e293b', is_fixed: true, type: 'expense' },
+          { user_id: data.user.id, name: 'Alimentação', color: '#334155', is_fixed: false, type: 'expense' },
+          { user_id: data.user.id, name: 'Saúde', color: '#0ea5e9', is_fixed: false, type: 'expense' },
+          { user_id: data.user.id, name: 'Academia', color: '#06b6d4', is_fixed: false, type: 'expense' },
+          { user_id: data.user.id, name: 'Transporte', color: '#f59e0b', is_fixed: false, type: 'expense' },
+          { user_id: data.user.id, name: 'Outros', color: '#8b5cf6', is_fixed: false, type: 'expense' },
+          // Categorias de receita
+          { user_id: data.user.id, name: 'Salário', color: '#10b981', is_fixed: true, type: 'income' },
+          { user_id: data.user.id, name: 'Freelance', color: '#06b6d4', is_fixed: false, type: 'income' },
+          { user_id: data.user.id, name: 'Investimentos', color: '#f59e0b', is_fixed: false, type: 'income' },
+          { user_id: data.user.id, name: 'Bônus', color: '#8b5cf6', is_fixed: false, type: 'income' },
+          { user_id: data.user.id, name: 'Outros', color: '#6b7280', is_fixed: false, type: 'income' },
         ]
 
         const { error: categoriesError } = await supabase
@@ -134,8 +111,6 @@ export default function Login({ onLogin }) {
       setPassword('')
       setConfirmPassword('')
       setGender('')
-      setAvatarFile(null)
-      setAvatarPreview(null)
       setIsSignUp(false)
       setError('Conta criada! Faça login para continuar.')
     } catch (err) {
@@ -179,18 +154,7 @@ export default function Login({ onLogin }) {
     }
   }
 
-  const handleAvatarChange = (e) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setAvatarFile(file)
-      // Criar preview
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
+
 
   if (user) {
     return null
@@ -282,35 +246,6 @@ export default function Login({ onLogin }) {
             </div>
           )}
 
-          {/* Foto de Perfil (apenas signup) */}
-          {isSignUp && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Foto de Perfil *
-              </label>
-              <div className="flex flex-col items-center gap-3">
-                {avatarPreview && (
-                  <img 
-                    src={avatarPreview} 
-                    alt="Preview" 
-                    className="w-24 h-24 rounded-full object-cover border-2 border-slate-300"
-                  />
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-600 focus:border-transparent outline-none transition"
-                  disabled={isLoading}
-                  required
-                />
-                {avatarFile && (
-                  <p className="text-xs text-green-600">✓ Imagem selecionada</p>
-                )}
-              </div>
-            </div>
-          )}
-
           {/* Mensagem de Erro */}
           {error && (
             <div className={`p-3 rounded-lg text-sm ${
@@ -343,8 +278,6 @@ export default function Login({ onLogin }) {
                 setPassword('')
                 setConfirmPassword('')
                 setGender('')
-                setAvatarFile(null)
-                setAvatarPreview(null)
               }}
               className="text-slate-700 font-semibold hover:underline"
               disabled={isLoading}

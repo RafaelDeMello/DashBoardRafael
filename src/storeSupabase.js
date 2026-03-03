@@ -8,6 +8,7 @@ const useStore = create((set, get) => ({
   userProfile: null,
   isLoading: false,
   error: null,
+  userBalance: { total_income: 0, total_expenses: 0, balance: 0 },
 
   // Definir usuário logado
   setUser: (user) => set({ user }),
@@ -52,7 +53,7 @@ const useStore = create((set, get) => ({
       if (error) throw error
 
       set({
-        categories: data || [],
+        categories: (data || []).map((c) => ({ ...c, type: c.type || 'expense' })),
         isLoading: false,
       })
     } catch (err) {
@@ -122,6 +123,7 @@ const useStore = create((set, get) => ({
             value: transaction.value,
             description: transaction.description || '',
             credit_card_id: transaction.credit_card_id || null,
+            type: transaction.type || 'expense',
           },
         ])
         .select()
@@ -245,6 +247,7 @@ const useStore = create((set, get) => ({
     }
 
     try {
+      console.log('📝 Criando categoria no banco:', category)
       const { data, error } = await supabase
         .from('categories')
         .insert([
@@ -253,12 +256,14 @@ const useStore = create((set, get) => ({
             name: category.name,
             color: category.color,
             is_fixed: category.isFixed || false,
+            type: category.type || 'expense',
           },
         ])
         .select()
 
       if (error) throw error
 
+      // data[0] já inclui o campo type retornado pelo banco
       set((state) => ({
         categories: [...state.categories, data[0]],
       }))
@@ -465,6 +470,126 @@ const useStore = create((set, get) => ({
     )
   },
 
+  // ====================================
+  // FUNÇÕES DE RECEITAS E SALDO
+  // ====================================
+
+  // Calcular saldo total do usuário
+  calculateUserBalance: () => {
+    const transactions = get().transactions
+    
+    const totalIncome = transactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + t.value, 0)
+    
+    const totalExpenses = transactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + t.value, 0)
+    
+    const balance = totalIncome - totalExpenses
+
+    console.log('💰 Saldo Calculado:', { totalIncome, totalExpenses, balance })
+    set({ userBalance: { total_income: totalIncome, total_expenses: totalExpenses, balance } })
+    return { totalIncome, totalExpenses, balance }
+  },
+
+  // Calcular saldo por mês
+  getMonthlyBalance: (year, month) => {
+    const monthTransactions = get().transactions.filter((t) => {
+      const date = new Date(t.date)
+      return date.getFullYear() === year && date.getMonth() === month
+    })
+
+    const totalIncome = monthTransactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + t.value, 0)
+    
+    const totalExpenses = monthTransactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + t.value, 0)
+    
+    return {
+      income: totalIncome,
+      expenses: totalExpenses,
+      balance: totalIncome - totalExpenses,
+      transactions: monthTransactions
+    }
+  },
+
+  // Adicionar receita
+  addIncome: async (income) => {
+    let user = get().user
+    
+    if (!user) {
+      console.log('📝 User não está na store, buscando do Supabase...')
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      user = authUser
+    }
+    
+    if (!user) {
+      console.warn('⚠ Sem usuário para adicionar receita')
+      return
+    }
+
+    try {
+      console.log('💵 Adicionando receita:', income)
+      const { data, error } = await supabase
+        .from('transactions')
+        .insert([
+          {
+            user_id: user.id,
+            date: income.date,
+            category: income.category,
+            value: income.value,
+            description: income.description || '',
+            type: 'income',
+          },
+        ])
+        .select()
+
+      if (error) {
+        console.error('❌ Erro ao inserir receita:', error)
+        throw error
+      }
+
+      console.log('✓ Receita inserida:', data[0])
+      
+      set((state) => ({
+        transactions: [data[0], ...state.transactions],
+      }))
+      
+      // Recalcular saldo
+      await get().calculateUserBalance()
+      
+      // Recarregar transações
+      console.log('🔄 Recarregando transações...')
+      await get().loadTransactions(user.id)
+    } catch (err) {
+      console.error('💥 Erro ao adicionar receita:', err)
+      set({ error: err.message })
+      throw err
+    }
+  },
+
+  // Obter transações por tipo
+  getTransactionsByType: (type) => {
+    return get().transactions.filter((t) => t.type === type)
+  },
+
+  // Obter total de receitas
+  getTotalIncome: () => {
+    return get().transactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + t.value, 0)
+  },
+
+  // Obter total de despesas
+  getTotalExpenses: () => {
+    return get().transactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + t.value, 0)
+  },
+
   // Limpar dados (logout)
   clearData: () => {
     set({
@@ -474,6 +599,7 @@ const useStore = create((set, get) => ({
       creditCardInvoices: [],
       user: null,
       error: null,
+      userBalance: { total_income: 0, total_expenses: 0, balance: 0 },
     })
   },
 }))

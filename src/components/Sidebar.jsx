@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Menu, X, BarChart3, Settings, Home, LogOut, CreditCard, FileText } from 'lucide-react'
+import { Menu, X, BarChart3, Settings, Home, LogOut, CreditCard, FileText, TrendingUp } from 'lucide-react'
 
 export default function Sidebar({ activeTab, setActiveTab, onLogout, sidebarBg = 'bg-gradient-to-b from-slate-800 to-slate-900', avatarUrl = null, gender = null }) {
   const [isOpen, setIsOpen] = useState(true)
@@ -8,6 +8,7 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, sidebarBg =
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'transactions', label: 'Despesas', icon: BarChart3 },
+    { id: 'income', label: 'Receitas', icon: TrendingUp },
     { id: 'categories', label: 'Add Despesas', icon: Settings },
     { id: 'credit_cards', label: 'Cartões', icon: CreditCard },
     { id: 'invoices', label: 'Faturas', icon: FileText },
