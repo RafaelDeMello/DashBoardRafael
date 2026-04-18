@@ -32,6 +32,7 @@ function App() {
 
         if (isMounted) {
           setUser(user)
+          useStore.getState().setUser(user)
           console.log('✓ Usuário:', user?.email || 'Sem login')
           setIsLoading(false)
         }
@@ -58,6 +59,7 @@ function App() {
         if (!isMounted) return
 
         setUser(session?.user || null)
+        useStore.getState().setUser(session?.user || null)
         if (session?.user?.id) {
           console.log('✓ Usuário autenticado:', session.user.id)
           // Mostrar splash por 2 segundos apenas
@@ -112,6 +114,7 @@ function App() {
   const handleLogout = async () => {
     await supabase.auth.signOut()
     useStore.getState().clearData()
+    useStore.getState().setUser(null)
     setUser(null)
   }
 
@@ -136,7 +139,7 @@ function App() {
         {!user ? (
           <LoginSupabase onLogin={setUser} />
         ) : (
-          <Dashboard user={user} gender={gender} onLogout={handleLogout} />
+          <Dashboard user={user} gender={gender} avatarUrl={avatarUrl} onLogout={handleLogout} />
         )}
       </div>
     </ErrorBoundary>
