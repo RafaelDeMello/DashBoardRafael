@@ -9,8 +9,8 @@ import useStore from './storeSupabase'
 
 function App() {
   const [user, setUser] = useState(null)
-  const [gender, setGender] = useState(null)
   const [avatarUrl, setAvatarUrl] = useState(null)
+  const [userProfile, setUserProfile] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [showSplash, setShowSplash] = useState(false)
   const [splashTimer, setSplashTimer] = useState(null)
@@ -73,7 +73,6 @@ function App() {
           }, 2000)
           setSplashTimer(timer)
         } else {
-          setGender(null)
           setAvatarUrl(null)
           setShowSplash(false)
           if (splashTimer) clearTimeout(splashTimer)
@@ -96,10 +95,10 @@ function App() {
       console.log('📥 Carregando perfil do usuário...')
       loadUserProfile(user.id).then(() => {
         if (isMounted) {
-          const userProfile = useStore.getState().userProfile
-          console.log('✓ Perfil carregado no App:', userProfile)
-          setGender(userProfile?.gender)
-          setAvatarUrl(userProfile?.avatar_url)
+          const profile = useStore.getState().userProfile
+          console.log('✓ Perfil carregado no App:', profile)
+          setUserProfile(profile)
+          setAvatarUrl(profile?.avatar_url)
         }
       }).catch(err => {
         console.error('Erro ao carregar perfil:', err)
@@ -130,7 +129,7 @@ function App() {
   }
 
   if (showSplash && user) {
-    return <LoadingSplash avatarUrl={avatarUrl} gender={gender} />
+    return <LoadingSplash avatarUrl={avatarUrl} />
   }
 
   return (
@@ -139,7 +138,7 @@ function App() {
         {!user ? (
           <LoginSupabase onLogin={setUser} />
         ) : (
-          <Dashboard user={user} gender={gender} avatarUrl={avatarUrl} onLogout={handleLogout} />
+          <Dashboard user={user} avatarUrl={avatarUrl} userName={userProfile?.full_name} userEmail={user?.email} onLogout={handleLogout} />
         )}
       </div>
     </ErrorBoundary>

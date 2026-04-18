@@ -1,8 +1,10 @@
 import { Clock, TrendingDown, TrendingUp, CreditCard, DollarSign } from 'lucide-react'
 
-export default function SummaryCards({ transactions, categories, gender, creditCards = [] }) {
-  const isFeminino = gender === 'feminino'
-  
+const defaultTheme = { accent: 'slate', primary: '#475569', secondary: '#1e293b' }
+
+export default function SummaryCards({ transactions, categories, theme = defaultTheme, creditCards = [] }) {
+  const accent = theme.accent || 'slate'
+
   // Calcula total de despesas
   const totalExpenses = transactions
     .filter(t => !t.type || t.type === 'expense')
@@ -39,13 +41,12 @@ export default function SummaryCards({ transactions, categories, gender, creditC
   // Número de transações
   const transactionCount = transactions.length
 
-  // Cores baseadas no gênero
-  const primaryColor = isFeminino ? 'from-pink-500 to-pink-600' : 'from-slate-600 to-slate-700'
-  const secondaryColor = isFeminino ? 'from-rose-400 to-rose-500' : 'from-slate-500 to-slate-600'
-  const tertiaryColor = isFeminino ? 'from-purple-400 to-purple-500' : 'from-slate-700 to-slate-800'
+  // Cores baseadas no tema
+  const primaryColor = `from-${accent}-600 to-${accent}-700`
+  const secondaryColor = `from-${accent}-500 to-${accent}-600`
+  const tertiaryColor = `from-${accent}-700 to-${accent}-800`
   const successColor = 'from-green-500 to-green-600'
-  const textPrimary = isFeminino ? 'text-pink-700' : 'text-slate-700'
-  const textSecondary = isFeminino ? 'text-rose-600' : 'text-slate-600'
+  const textPrimary = `text-${accent}-700`
 
   const cards = [
     {
@@ -102,4 +103,3 @@ export default function SummaryCards({ transactions, categories, gender, creditC
     </div>
   )
 }
-

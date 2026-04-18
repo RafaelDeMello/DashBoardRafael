@@ -5,17 +5,28 @@ import TabContent from './TabContent'
 import ChartsDashboard from './Charts'
 import CreditCardsManager from './CreditCardsManager'
 import InvoicesPanel from './InvoicesPanel'
+import Settings from './Settings'
 import useStore from '../storeSupabase'
 
-export default function Dashboard({ user, gender, onLogout }) {
+const themeConfig = {
+  slate: { bg: 'bg-slate-50', sidebar: 'from-slate-800 to-slate-900', accent: 'slate', cardBg: 'bg-slate-100', button: 'bg-slate-700 hover:bg-slate-800', buttonAlt: 'bg-slate-600 hover:bg-slate-700' },
+  pink: { bg: 'bg-pink-50', sidebar: 'from-pink-700 to-pink-800', accent: 'pink', cardBg: 'bg-pink-100', button: 'bg-pink-600 hover:bg-pink-700', buttonAlt: 'bg-pink-500 hover:bg-pink-600' },
+  blue: { bg: 'bg-blue-50', sidebar: 'from-blue-700 to-blue-800', accent: 'blue', cardBg: 'bg-blue-100', button: 'bg-blue-600 hover:bg-blue-700', buttonAlt: 'bg-blue-500 hover:bg-blue-600' },
+  green: { bg: 'bg-green-50', sidebar: 'from-green-700 to-green-800', accent: 'green', cardBg: 'bg-green-100', button: 'bg-green-600 hover:bg-green-700', buttonAlt: 'bg-green-500 hover:bg-green-600' },
+  purple: { bg: 'bg-purple-50', sidebar: 'from-purple-700 to-purple-800', accent: 'purple', cardBg: 'bg-purple-100', button: 'bg-purple-600 hover:bg-purple-700', buttonAlt: 'bg-purple-500 hover:bg-purple-600' },
+  orange: { bg: 'bg-amber-50', sidebar: 'from-amber-700 to-amber-800', accent: 'amber', cardBg: 'bg-amber-100', button: 'bg-amber-600 hover:bg-amber-700', buttonAlt: 'bg-amber-500 hover:bg-amber-600' },
+}
+
+export default function Dashboard({ user, avatarUrl, userName, userEmail, onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard')
-  const [localGender, setLocalGender] = useState(gender)
-  const [localAvatarUrl, setLocalAvatarUrl] = useState(null)
+  const [localAvatarUrl, setLocalAvatarUrl] = useState(avatarUrl)
+  const [localUserName, setLocalUserName] = useState(userName)
+  const [localUserEmail, setLocalUserEmail] = useState(userEmail)
+  const [localTheme, setLocalTheme] = useState('slate')
   
-  // Tema baseado no gênero
-  const isFeminino = localGender === 'feminino'
-  const bgColor = isFeminino ? 'bg-pink-50' : 'bg-slate-50'
-  const sidebarBg = isFeminino ? 'bg-gradient-to-b from-pink-700 to-pink-800' : 'bg-gradient-to-b from-slate-800 to-slate-900'
+  const theme = themeConfig[localTheme] || themeConfig.slate
+  const bgColor = theme.bg
+  const sidebarBg = `bg-gradient-to-b ${theme.sidebar}`
   
   const transactions = useStore((state) => state.transactions)
   const categories = useStore((state) => state.categories)
@@ -35,8 +46,10 @@ export default function Dashboard({ user, gender, onLogout }) {
       loadUserProfile(user.id).then(() => {
         const userProfile = useStore.getState().userProfile
         if (userProfile) {
-          setLocalGender(userProfile.gender)
           setLocalAvatarUrl(userProfile.avatar_url)
+          setLocalUserName(userProfile.full_name)
+          setLocalUserEmail(user?.email)
+          setLocalTheme(userProfile.app_theme || 'slate')
         }
       }).catch(err => {
         console.error('Erro ao carregar perfil:', err)
@@ -53,7 +66,8 @@ export default function Dashboard({ user, gender, onLogout }) {
         onLogout={onLogout}
         sidebarBg={sidebarBg}
         avatarUrl={localAvatarUrl}
-        gender={localGender}
+        userName={localUserName}
+        userEmail={localUserEmail}
       />
 
       {/* Main Content */}
@@ -63,9 +77,7 @@ export default function Dashboard({ user, gender, onLogout }) {
           {activeTab === 'dashboard' && (
             <>
               <h1 className="text-4xl font-bold text-gray-900 mb-8">Dashboard</h1>
-              <SummaryCards transactions={transactions} categories={categories} gender={localGender} creditCards={creditCards} />
-
-              {/* Charts Section */}
+              <SummaryCards transactions={transactions} categories={categories} theme={theme} creditCards={creditCards} />
               <ChartsDashboard transactions={transactions} categories={categories} />
             </>
           )}
@@ -73,14 +85,21 @@ export default function Dashboard({ user, gender, onLogout }) {
           {/* Credit Cards Tab */}
           {activeTab === 'credit_cards' && (
             <TabContent title="Gerenciar Cartões de Crédito">
-              <CreditCardsManager gender={localGender} />
+              <CreditCardsManager theme={theme} />
             </TabContent>
           )}
 
           {/* Invoices Tab */}
           {activeTab === 'invoices' && (
             <TabContent title="Faturas">
-              <InvoicesPanel gender={localGender} />
+              <InvoicesPanel theme={theme} />
+            </TabContent>
+          )}
+
+          {/* Settings Tab */}
+          {activeTab === 'settings' && (
+            <TabContent title="Configurações">
+              <Settings />
             </TabContent>
           )}
         </div>

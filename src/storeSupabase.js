@@ -30,6 +30,24 @@ const useStore = create((set, get) => ({
         .eq('id', userId)
         .single()
 
+      if (error && error.code === 'PGRST116') {
+        console.log('📝 Perfil não encontrado, criando novo perfil para:', userId)
+        
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert([{ id: userId }])
+          .select()
+          .single()
+
+        if (createError) {
+          console.error('Erro ao criar perfil:', createError)
+          return
+        }
+
+        set({ userProfile: newProfile })
+        return
+      }
+
       if (error) {
         console.error('Erro ao carregar perfil:', error)
         return
@@ -38,6 +56,53 @@ const useStore = create((set, get) => ({
       set({ userProfile: data })
     } catch (err) {
       console.error('Erro ao carregar perfil:', err)
+    }
+  },
+
+  updateUserProfile: async (userId, updates) => {
+    try {
+      // Primeiro verifica se o perfil existe
+      const { data: existingProfile, error: checkError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .single()
+
+      // Se não existe, cria primeiro
+      if (checkError && checkError.code === 'PGRST116') {
+        console.log('📝 Criando perfil antes de atualizar...')
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert([{ id: userId, ...updates }])
+        
+        if (insertError) throw insertError
+        
+        // Recarrega o perfil
+        const { data: newProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single()
+        
+        set({ userProfile: newProfile })
+        return newProfile
+      }
+
+      // Se existe, faz o update
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', userId)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      set({ userProfile: data })
+      return data
+    } catch (err) {
+      console.error('Erro ao atualizar perfil:', err)
+      throw err
     }
   },
 

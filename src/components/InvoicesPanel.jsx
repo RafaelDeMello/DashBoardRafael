@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react'
 import useStore from '../storeSupabase'
 
-export default function InvoicesPanel({ gender = 'masculino' }) {
+const defaultTheme = { primary: '#475569', secondary: '#1e293b', accent: 'slate', button: 'bg-slate-600 hover:bg-slate-700', border: 'border-slate-300', text: 'text-slate-600', hover: 'hover:bg-slate-50' }
+
+export default function InvoicesPanel({ theme = defaultTheme }) {
   const { creditCards, creditCardInvoices, loadInvoices, markInvoicePaid, transactions, user } = useStore()
   const [selectedCard, setSelectedCard] = useState(null)
   const [invoices, setInvoices] = useState([])
   const [loading, setLoading] = useState(false)
 
-  const isFeminino = gender?.toLowerCase().includes('fem')
-
-  const textPrimary = isFeminino ? 'text-pink-600' : 'text-slate-600'
-  const buttonBg = isFeminino ? 'bg-pink-500 hover:bg-pink-600' : 'bg-slate-600 hover:bg-slate-700'
-  const borderColor = isFeminino ? 'border-pink-300' : 'border-slate-300'
+  const textPrimary = `text-${theme.accent}-600`
+  const buttonBg = theme.button
+  const borderColor = `border-${theme.accent}-300`
 
   // Selecionar primeiro cartão por padrão
   useEffect(() => {

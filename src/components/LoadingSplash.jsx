@@ -1,8 +1,5 @@
-export default function LoadingSplash({ avatarUrl, gender }) {
-  const isFeminino = gender === 'feminino'
-  const bgGradient = isFeminino 
-    ? 'from-pink-600 to-pink-800' 
-    : 'from-slate-700 to-slate-900'
+export default function LoadingSplash({ avatarUrl }) {
+  const bgGradient = 'from-slate-700 to-slate-900'
 
   return (
     <div className={`min-h-screen bg-gradient-to-b ${bgGradient} flex flex-col items-center justify-center p-4`}>

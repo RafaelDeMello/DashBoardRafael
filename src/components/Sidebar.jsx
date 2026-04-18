@@ -1,15 +1,17 @@
 import { useState } from 'react'
-import { Menu, X, Home, LogOut, CreditCard, FileText } from 'lucide-react'
+import { Menu, X, Home, LogOut, CreditCard, FileText, User, Settings } from 'lucide-react'
 
-export default function Sidebar({ activeTab, setActiveTab, onLogout, sidebarBg = 'bg-gradient-to-b from-slate-800 to-slate-900', avatarUrl = null, gender = null }) {
+export default function Sidebar({ activeTab, setActiveTab, onLogout, sidebarBg = 'bg-gradient-to-b from-slate-800 to-slate-900', avatarUrl = null, userName = null, userEmail = null }) {
   const [isOpen, setIsOpen] = useState(true)
-  const isFeminino = gender === 'feminino'
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'credit_cards', label: 'Cartões', icon: CreditCard },
     { id: 'invoices', label: 'Faturas', icon: FileText },
+    { id: 'settings', label: 'Configurações', icon: Settings },
   ]
+
+  const displayName = userName || userEmail?.split('@')[0] || 'Usuário'
 
   return (
     <>
@@ -38,13 +40,13 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, sidebarBg =
                 className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg"
               />
             ) : (
-              <div className={`w-20 h-20 rounded-full ${isFeminino ? 'bg-pink-400' : 'bg-slate-600'} flex items-center justify-center border-4 border-white shadow-lg`}>
-                <span className="text-white text-2xl">👤</span>
+              <div className="w-20 h-20 rounded-full flex items-center justify-center border-4 border-white shadow-lg bg-slate-500">
+                <User size={40} className="text-white" />
               </div>
             )}
           </div>
-          <h1 className="text-2xl font-bold text-center">DashBoard</h1>
-          <p className="text-blue-200 text-sm mt-1 text-center"></p>
+          <h1 className="text-2xl font-bold text-center">{displayName}</h1>
+          {userEmail && <p className="text-blue-200 text-sm mt-1 text-center">{userEmail}</p>}
         </div>
 
         {/* Menu Items */}

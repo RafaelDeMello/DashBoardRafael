@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import useStore from '../storeSupabase'
 
-export default function CreditCardsManager({ gender = 'masculino' }) {
+const defaultTheme = { primary: '#475569', secondary: '#1e293b', accent: 'slate', button: 'bg-slate-600 hover:bg-slate-700', border: 'border-slate-300', text: 'text-slate-600', hover: 'hover:bg-slate-50' }
+
+export default function CreditCardsManager({ theme = defaultTheme }) {
   const { creditCards, loadCreditCards, addCreditCard, deleteCreditCard, user } = useStore()
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState({
@@ -12,8 +14,6 @@ export default function CreditCardsManager({ gender = 'masculino' }) {
     color: '#475569',
   })
   const [loading, setLoading] = useState(false)
-
-  const isFeminino = gender?.toLowerCase().includes('fem')
 
   // Cores predefinidas
   const colorOptions = [
@@ -112,13 +112,11 @@ export default function CreditCardsManager({ gender = 'masculino' }) {
     }
   }
 
-  const primaryGradient = isFeminino
-    ? 'from-pink-400 to-rose-500'
-    : 'from-slate-400 to-slate-600'
-  const borderColor = isFeminino ? 'border-pink-300' : 'border-slate-300'
-  const bgHover = isFeminino ? 'hover:bg-pink-50' : 'hover:bg-slate-50'
-  const textPrimary = isFeminino ? 'text-pink-600' : 'text-slate-600'
-  const buttonBg = isFeminino ? 'bg-pink-500 hover:bg-pink-600' : 'bg-slate-600 hover:bg-slate-700'
+  const primaryGradient = `from-${theme.accent}-400 to-${theme.accent}-500`
+  const borderColor = `border-${theme.accent}-300`
+  const bgHover = `hover:bg-${theme.accent}-50`
+  const textPrimary = `text-${theme.accent}-600`
+  const buttonBg = `${theme.button}`
 
   return (
     <div className="space-y-6">
