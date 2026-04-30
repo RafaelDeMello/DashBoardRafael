@@ -128,9 +128,9 @@ const useStore = create((set, get) => ({
     img.onload = async () => {
       URL.revokeObjectURL(objectUrl)
       
-      // 4. Validar dimensões (máximo 500x500)
-      if (img.width > 500 || img.height > 500) {
-        reject(new Error('Imagem muito grande. Máx: 500x500px'))
+      // 4. Validar dimensões (máximo 1280x1280)
+      if (img.width > 1280 || img.height > 1280) {
+        reject(new Error('Imagem muito grande. Máx: 1280x500px'))
         return
       }
       
@@ -140,14 +140,14 @@ const useStore = create((set, get) => ({
         
         // 6. Fazer upload para o Supabase Storage
         const { data, error } = await supabase.storage
-          .from('avatar')
+          .from('avatars')
           .upload(filePath, file, { upsert: true })
         
         if (error) throw error
         
         // 7. Obter URL pública
         const { data: { publicUrl } } = supabase.storage
-          .from('avatar')
+          .from('avatars')
           .getPublicUrl(filePath)
         
         resolve(publicUrl)
