@@ -16,6 +16,7 @@ export default function SettingsPanel({ onClose }) {
   const userProfile = useStore((state) => state.userProfile)
   const loadUserProfile = useStore((state) => state.loadUserProfile)
   const updateUserProfile = useStore((state) => state.updateUserProfile)
+  const uploadAvatar = useStore((state) => state.uploadAvatar)
 
   const fileInputRef = useRef(null)
 
@@ -43,18 +44,33 @@ export default function SettingsPanel({ onClose }) {
 
   const handleFileSelect = async (e) => {
     const file = e.target.files?.[0]
+
     if (!file) return
 
+    //validar tipo de arquivo
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error('Tipo de arquivo não suportado. Use: JPEG, PNG, GIF ou WEBP.')
+      return
+    }
+    // Validar o tamanho do arquivo
+    const maxSize = 2 * 1024 * 1024
+    if (file.size > maxSize){
+      throw new Error('Arquivo muito grande. O limite é de 2MB.')
+      return
+    }
+
+    // Fazer upload
     setUploading(true)
+    setMessage(null)
+
     try {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setFormData({ ...formData, avatar_url: reader.result })
-        setUploading(false)
-      }
-      reader.readAsDataURL(file)
+      const avatarUrl = await uploadAvatar(user.id, file)
+      setFormData({ ...formData, avatar_url: avatarUrl })
+      setMessage({ type: 'success', text: 'Avatar atualizado com sucesso!' })
     } catch (err) {
-      console.error('Erro ao processar imagem:', err)
+      setMessage({ type: 'error', text: err.message })
+    } finally {
       setUploading(false)
     }
   }
