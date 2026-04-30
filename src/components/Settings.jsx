@@ -1,119 +1,160 @@
-import { useState, useEffect, useRef } from 'react'
-import { User, Save, X, Upload, Palette } from 'lucide-react'
-import useStore from '../storeSupabase'
+import { useState, useEffect, useRef } from "react";
+import { User, Save, X, Upload, Palette } from "lucide-react";
+import useStore from "../storeSupabase";
 
 const themeOptions = [
-  { id: 'slate', name: 'Cinza', primary: '#475569', secondary: '#1e293b' },
-  { id: 'pink', name: 'Rosa', primary: '#ec4899', secondary: '#be185d' },
-  { id: 'blue', name: 'Azul', primary: '#0ea5e9', secondary: '#0369a1' },
-  { id: 'green', name: 'Verde', primary: '#10b981', secondary: '#047857' },
-  { id: 'purple', name: 'Roxo', primary: '#8b5cf6', secondary: '#6d28d9' },
-  { id: 'orange', name: 'Laranja', primary: '#f59e0b', secondary: '#d97706' },
-]
+  { id: "slate", name: "Cinza", primary: "#475569", secondary: "#1e293b" },
+  { id: "pink", name: "Rosa", primary: "#ec4899", secondary: "#be185d" },
+  { id: "blue", name: "Azul", primary: "#0ea5e9", secondary: "#0369a1" },
+  { id: "green", name: "Verde", primary: "#10b981", secondary: "#047857" },
+  { id: "purple", name: "Roxo", primary: "#8b5cf6", secondary: "#6d28d9" },
+  { id: "orange", name: "Laranja", primary: "#f59e0b", secondary: "#d97706" },
+];
 
 export default function SettingsPanel({ onClose }) {
-  const user = useStore((state) => state.user)
-  const userProfile = useStore((state) => state.userProfile)
-  const loadUserProfile = useStore((state) => state.loadUserProfile)
-  const updateUserProfile = useStore((state) => state.updateUserProfile)
-  const uploadAvatar = useStore((state) => state.uploadAvatar)
+  const user = useStore((state) => state.user);
+  const userProfile = useStore((state) => state.userProfile);
+  const loadUserProfile = useStore((state) => state.loadUserProfile);
+  const updateUserProfile = useStore((state) => state.updateUserProfile);
+  const uploadAvatar = useStore((state) => state.uploadAvatar);
+  const [lastUpdateTime, setLastUpdateTime] = useState(0);
 
-  const fileInputRef = useRef(null)
+  const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
-    full_name: '',
-    avatar_url: '',
-    app_theme: 'slate'
-  })
-  const [isLoading, setIsLoading] = useState(false)
-  const [message, setMessage] = useState(null)
-  const [uploading, setUploading] = useState(false)
+    full_name: "",
+    avatar_url: "",
+    app_theme: "slate",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
-  const buttonBg = 'bg-slate-700 hover:bg-slate-800'
-  const accentColor = 'text-slate-600'
+  const buttonBg = "bg-slate-700 hover:bg-slate-800";
+  const accentColor = "text-slate-600";
 
   useEffect(() => {
     if (userProfile) {
       setFormData({
-        full_name: userProfile.full_name || '',
-        avatar_url: userProfile.avatar_url || '',
-        app_theme: userProfile.app_theme || 'slate'
-      })
+        full_name: userProfile.full_name || "",
+        avatar_url: userProfile.avatar_url || "",
+        app_theme: userProfile.app_theme || "slate",
+      });
     }
-  }, [userProfile])
+  }, [userProfile]);
 
   const handleFileSelect = async (e) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
 
-    if (!file) return
-
-    //validar tipo de arquivo
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-    if (!allowedTypes.includes(file.type)) {
-      throw new Error('Tipo de arquivo não suportado. Use: JPEG, PNG, GIF ou WEBP.')
-      return
-    }
-    // Validar o tamanho do arquivo
-    const maxSize = 2 * 1024 * 1024
-    if (file.size > maxSize){
-      throw new Error('Arquivo muito grande. O limite é de 2MB.')
-      return
-    }
-
-    // Fazer upload
-    setUploading(true)
-    setMessage(null)
-
+    if (!file) return;
     try {
-      const avatarUrl = await uploadAvatar(user.id, file)
-      setFormData({ ...formData, avatar_url: avatarUrl })
-      setMessage({ type: 'success', text: 'Avatar atualizado com sucesso!' })
+      //validar tipo de arquivo
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
+      if (!allowedTypes.includes(file.type)) {
+        throw new Error(
+          "Tipo de arquivo não suportado. Use: JPEG, PNG, GIF ou WEBP.",
+        );
+        return;
+      }
+      // Validar o tamanho do arquivo
+      const maxSize = 2 * 1024 * 1024;
+      if (file.size > maxSize) {
+        throw new Error("Arquivo muito grande. O limite é de 2MB.");
+        return;
+      }
+
+      // Fazer upload
+      setUploading(true);
+      setMessage(null);
+
+      const avatarUrl = await uploadAvatar(user.id, file);
+      setFormData({ ...formData, avatar_url: avatarUrl });
+      setMessage({ type: "success", text: "Avatar atualizado com sucesso!" });
     } catch (err) {
-      setMessage({ type: 'error', text: err.message })
+      setMessage({ type: "error", text: err.message });
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
-  }
+  };
+
+  const sanitizeText = (text) => {
+    //remover tags HTML
+    return text
+      .replace(/<\/?[^>]+(>|$)/g, "")
+      .replace(/javascript:/gi, "")
+      .replace(/on\w+="[^"]*"/g, "")
+      .trim()
+      .substring(0, 100);
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setMessage(null)
+    e.preventDefault();
+    setIsLoading(true);
+    setMessage(null);
+
+    const now = Date.now();
+    if (now - lastUpdateTime < 2000) {
+      setMessage({
+        type: "error",
+        text: "Por favor, aguarde antes de salvar novamente.",
+      });
+      setIsLoading(false);
+      return;
+    }
 
     try {
       // Filtrar apenas campos que têm valor para evitar erro de colunas inexistentes
-      const updates = {}
-      if (formData.full_name !== undefined) updates.full_name = formData.full_name
-      if (formData.avatar_url !== undefined) updates.avatar_url = formData.avatar_url
-      if (formData.app_theme !== undefined) updates.app_theme = formData.app_theme
+      const updates = {};
+      if (formData.full_name !== undefined)
+        updates.full_name = sanitizeText(formData.full_name);
+      if (formData.avatar_url !== undefined)
+        updates.avatar_url = formData.avatar_url;
+      if (formData.app_theme !== undefined)
+        updates.app_theme = formData.app_theme;
 
-      console.log('Salvando perfil:', updates)
-      
-      await updateUserProfile(user.id, updates)
-      await loadUserProfile(user.id)
-      setMessage({ type: 'success', text: 'Perfil atualizado com sucesso!' })
+      console.log("Salvando perfil:", updates);
+
+      await updateUserProfile(user.id, updates);
+      await loadUserProfile(user.id);
+
+      setLastUpdateTime(now);
+
+      setMessage({ type: "success", text: "Perfil atualizado com sucesso!" });
     } catch (err) {
-      console.error('Erro ao salvar:', err)
-      setMessage({ type: 'error', text: 'Erro ao atualizar perfil: ' + err.message })
+      console.error("Erro ao salvar:", err);
+      setMessage({
+        type: "error",
+        text: "Erro ao atualizar perfil: " + err.message,
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleRemoveAvatar = () => {
-    setFormData({ ...formData, avatar_url: '' })
+    setFormData({ ...formData, avatar_url: "" });
     if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+      fileInputRef.current.value = "";
     }
-  }
+  };
 
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-white rounded-xl shadow-lg p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className={`text-2xl font-bold ${accentColor}`}>Configurações do Perfil</h2>
+          <h2 className={`text-2xl font-bold ${accentColor}`}>
+            Configurações do Perfil
+          </h2>
           {onClose && (
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-lg"
+            >
               <X size={24} className="text-gray-500" />
             </button>
           )}
@@ -133,8 +174,10 @@ export default function SettingsPanel({ onClose }) {
                 <User size={40} className="text-white" />
               </div>
             )}
-            
-            <label className={`absolute bottom-0 right-0 ${buttonBg} text-white p-2 rounded-full cursor-pointer hover:opacity-90`}>
+
+            <label
+              className={`absolute bottom-0 right-0 ${buttonBg} text-white p-2 rounded-full cursor-pointer hover:opacity-90`}
+            >
               <Upload size={16} />
               <input
                 ref={fileInputRef}
@@ -146,7 +189,7 @@ export default function SettingsPanel({ onClose }) {
               />
             </label>
           </div>
-          
+
           <div className="mt-3 flex gap-2">
             <button
               type="button"
@@ -154,7 +197,7 @@ export default function SettingsPanel({ onClose }) {
               className="text-sm text-gray-600 hover:text-gray-800 flex items-center gap-1"
             >
               <Upload size={14} />
-              {uploading ? 'Enviando...' : 'Alterar foto'}
+              {uploading ? "Enviando..." : "Alterar foto"}
             </button>
             {formData.avatar_url && (
               <button
@@ -177,7 +220,9 @@ export default function SettingsPanel({ onClose }) {
             <input
               type="text"
               value={formData.full_name}
-              onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, full_name: e.target.value })
+              }
               placeholder="Seu nome"
               maxLength={100}
               className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-slate-500 focus:outline-none"
@@ -195,16 +240,24 @@ export default function SettingsPanel({ onClose }) {
                 <button
                   key={theme.id}
                   type="button"
-                  onClick={() => setFormData({ ...formData, app_theme: theme.id })}
+                  onClick={() =>
+                    setFormData({ ...formData, app_theme: theme.id })
+                  }
                   className={`p-3 rounded-lg border-2 transition-all ${
-                    formData.app_theme === theme.id 
-                      ? 'border-gray-800 ring-2 ring-gray-400' 
-                      : 'border-gray-200 hover:border-gray-400'
+                    formData.app_theme === theme.id
+                      ? "border-gray-800 ring-2 ring-gray-400"
+                      : "border-gray-200 hover:border-gray-400"
                   }`}
                 >
                   <div className="flex gap-1 justify-center mb-2">
-                    <div className="w-6 h-6 rounded-full" style={{ backgroundColor: theme.primary }} />
-                    <div className="w-6 h-6 rounded-full" style={{ backgroundColor: theme.secondary }} />
+                    <div
+                      className="w-6 h-6 rounded-full"
+                      style={{ backgroundColor: theme.primary }}
+                    />
+                    <div
+                      className="w-6 h-6 rounded-full"
+                      style={{ backgroundColor: theme.secondary }}
+                    />
                   </div>
                   <span className="text-xs font-medium">{theme.name}</span>
                 </button>
@@ -214,9 +267,13 @@ export default function SettingsPanel({ onClose }) {
 
           {/* Mensagem */}
           {message && (
-            <div className={`p-3 rounded-lg text-sm ${
-              message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-            }`}>
+            <div
+              className={`p-3 rounded-lg text-sm ${
+                message.type === "success"
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-700"
+              }`}
+            >
               {message.text}
             </div>
           )}
@@ -227,7 +284,9 @@ export default function SettingsPanel({ onClose }) {
             disabled={isLoading}
             className={`w-full ${buttonBg} text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2 disabled:opacity-50`}
           >
-            {isLoading ? 'Salvando...' : (
+            {isLoading ? (
+              "Salvando..."
+            ) : (
               <>
                 <Save size={20} />
                 Salvar Alterações
@@ -237,5 +296,5 @@ export default function SettingsPanel({ onClose }) {
         </form>
       </div>
     </div>
-  )
+  );
 }
