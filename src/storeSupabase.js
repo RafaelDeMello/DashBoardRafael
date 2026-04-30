@@ -59,6 +59,7 @@ const useStore = create((set, get) => ({
     }
   },
 
+
   updateUserProfile: async (userId, updates) => {
     try {
       // Primeiro verifica se o perfil existe
@@ -105,6 +106,64 @@ const useStore = create((set, get) => ({
       throw err
     }
   },
+
+  
+  uploadAvatar: async (userId, file) => {
+
+    // Validar tipo de arquivo
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error('Formato inválido. Use: JPEG, PNG, GIF ou WEBP.')
+    }
+    // Validar tamanho do arquivo
+    const maxSizeMB = 2 * 1024 * 1024 // 2MB
+    if (file.size > maxSizeMB) {
+      throw new Error('Arquivo muito grande. Máximo permitido: 2MB.')
+    }
+    // Validar se realmente é uma imagem
+    const img = new Image()
+    const objectUrl = URL.createObjectURL(file)
+
+    return new Promise((resolve, reject) => {
+    img.onload = async () => {
+      URL.revokeObjectURL(objectUrl)
+      
+      // 4. Validar dimensões (máximo 500x500)
+      if (img.width > 500 || img.height > 500) {
+        reject(new Error('Imagem muito grande. Máx: 500x500px'))
+        return
+      }
+      
+      try {
+        // 5. Criar caminho único: userId/avatar.jpg
+        const filePath = `${userId}/avatar.jpg`
+        
+        // 6. Fazer upload para o Supabase Storage
+        const { data, error } = await supabase.storage
+          .from('avatar')
+          .upload(filePath, file, { upsert: true })
+        
+        if (error) throw error
+        
+        // 7. Obter URL pública
+        const { data: { publicUrl } } = supabase.storage
+          .from('avatar')
+          .getPublicUrl(filePath)
+        
+        resolve(publicUrl)
+      } catch (err) {
+        reject(err)
+      }
+    }
+    
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl)
+      reject(new Error('Arquivo corrompido ou inválido'))
+    }
+    
+    img.src = objectUrl
+  })
+},
 
   // ====================================
   // CARTÕES DE CRÉDITO
