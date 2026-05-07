@@ -17,7 +17,9 @@ export default function SettingsPanel({ onClose }) {
   const loadUserProfile = useStore((state) => state.loadUserProfile);
   const updateUserProfile = useStore((state) => state.updateUserProfile);
   const uploadAvatar = useStore((state) => state.uploadAvatar);
+  const removeAvatar = useStore((state) => state.removeAvatar);
   const [lastUpdateTime, setLastUpdateTime] = useState(0);
+  const [removingAvatar, setRemovingAvatar] = useState(false);
 
   const fileInputRef = useRef(null);
 
@@ -73,8 +75,11 @@ export default function SettingsPanel({ onClose }) {
       setMessage(null);
 
       const avatarUrl = await uploadAvatar(user.id, file);
-      setFormData({ ...formData, avatar_url: avatarUrl });
-      setMessage({ type: "success", text: "Avatar atualizado com sucesso!" });
+      setFormData((prev) => ({ ...prev, avatar_url: avatarUrl }));
+      setMessage({
+        type: "success",
+        text: "Avatar atualizado e salvo com sucesso!",
+      });
     } catch (err) {
       setMessage({ type: "error", text: err.message });
     } finally {
@@ -136,10 +141,29 @@ export default function SettingsPanel({ onClose }) {
     }
   };
 
-  const handleRemoveAvatar = () => {
-    setFormData({ ...formData, avatar_url: "" });
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+  const handleRemoveAvatar = async () => {
+    if (!user?.id) return;
+
+    try {
+      setRemovingAvatar(true);
+      setMessage(null);
+
+      await removeAvatar(user.id);
+
+      setFormData((prev) => ({ ...prev, avatar_url: "" }));
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
+      setMessage({ type: "success", text: "Avatar removido com sucesso!" });
+    } catch (err) {
+      setMessage({
+        type: "error",
+        text: "Erro ao remover avatar: " + err.message,
+      });
+    } finally {
+      setRemovingAvatar(false);
     }
   };
 
@@ -203,9 +227,10 @@ export default function SettingsPanel({ onClose }) {
               <button
                 type="button"
                 onClick={handleRemoveAvatar}
-                className="text-sm text-red-500 hover:underline"
+                disabled={uploading || removingAvatar}
+                className="text-sm text-red-500 hover:underline disabled:opacity-50"
               >
-                Remover
+                {removingAvatar ? "Removendo..." : "Remover"}
               </button>
             )}
           </div>

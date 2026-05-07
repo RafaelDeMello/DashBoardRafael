@@ -19,12 +19,14 @@ const themeConfig = {
 
 export default function Dashboard({ user, avatarUrl, userName, userEmail, onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard')
-  const [localAvatarUrl, setLocalAvatarUrl] = useState(avatarUrl)
-  const [localUserName, setLocalUserName] = useState(userName)
-  const [localUserEmail, setLocalUserEmail] = useState(userEmail)
-  const [localTheme, setLocalTheme] = useState('slate')
-  
-  const theme = themeConfig[localTheme] || themeConfig.slate
+  const userProfile = useStore((state) => state.userProfile)
+
+  const currentAvatarUrl = userProfile?.avatar_url || avatarUrl
+  const currentUserName = userProfile?.full_name || userName
+  const currentUserEmail = user?.email || userEmail
+  const currentThemeId = userProfile?.app_theme || 'slate'
+
+  const theme = themeConfig[currentThemeId] || themeConfig.slate
   const bgColor = theme.bg
   const sidebarBg = `bg-gradient-to-b ${theme.sidebar}`
   
@@ -43,19 +45,11 @@ export default function Dashboard({ user, avatarUrl, userName, userEmail, onLogo
       loadTransactions(user.id)
       loadCreditCards(user.id)
       
-      loadUserProfile(user.id).then(() => {
-        const userProfile = useStore.getState().userProfile
-        if (userProfile) {
-          setLocalAvatarUrl(userProfile.avatar_url)
-          setLocalUserName(userProfile.full_name)
-          setLocalUserEmail(user?.email)
-          setLocalTheme(userProfile.app_theme || 'slate')
-        }
-      }).catch(err => {
+      loadUserProfile(user.id).catch(err => {
         console.error('Erro ao carregar perfil:', err)
       })
     }
-  }, [user?.id])
+  }, [user?.id, loadCategories, loadTransactions, loadCreditCards, loadUserProfile])
 
   return (
     <div className={`flex h-screen overflow-hidden ${bgColor}`}>
@@ -65,9 +59,9 @@ export default function Dashboard({ user, avatarUrl, userName, userEmail, onLogo
         setActiveTab={setActiveTab}
         onLogout={onLogout}
         sidebarBg={sidebarBg}
-        avatarUrl={localAvatarUrl}
-        userName={localUserName}
-        userEmail={localUserEmail}
+        avatarUrl={currentAvatarUrl}
+        userName={currentUserName}
+        userEmail={currentUserEmail}
       />
 
       {/* Main Content */}
