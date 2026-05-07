@@ -1,0 +1,93 @@
+# Changelog operacional
+
+Este arquivo foi preparado para atualizacao continua (diaria/semanal).
+
+## Como usar
+
+Para cada mudanca relevante, adicione um bloco novo no topo com o template abaixo.
+
+---
+
+## Template de entrada
+
+````md
+## [AAAA-MM-DD] Titulo curto da mudanca
+
+- Contexto:
+- Mudanca aplicada:
+- Motivo:
+- Impacto esperado:
+- Arquivos alterados:
+  - src/arquivo1
+  - src/arquivo2
+- SQL executado (se houver):
+```sql
+-- cole aqui
+```
+- Evidencia de validacao:
+  - [ ] Fluxo principal validado
+  - [ ] Build ok
+  - [ ] Sem erro novo no console
+- Riscos/pontos de atencao:
+- Proximo passo:
+````
+
+---
+
+## [2026-05-06] Criacao das regras operacionais v1.0
+
+- Contexto: foi definida a necessidade de padronizar fechamento de features com documentacao obrigatoria.
+- Mudanca aplicada:
+  - criado o arquivo `docs/REGRAS_OPERACIONAIS.md`.
+  - definida regra principal de entrega: nenhuma feature e concluida sem atualizacao de documentacao.
+  - adicionado checklist obrigatorio por entrega e Definition of Done (DoD).
+- Motivo: evitar perda de contexto e garantir consistencia entre codigo, arquitetura e operacao.
+- Impacto esperado:
+  - maior previsibilidade no processo de entrega.
+  - documentacao sempre atualizada junto com novas funcionalidades.
+- Arquivos alterados:
+  - `docs/REGRAS_OPERACIONAIS.md`
+  - `docs/06-changelog-operacional.md`
+- SQL executado (se houver):
+```sql
+-- nao se aplica
+```
+- Evidencia de validacao:
+  - [x] Fluxo principal validado
+  - [x] Build ok
+  - [x] Sem erro novo no console
+- Riscos/pontos de atencao:
+  - manter disciplina de atualizar README, arquitetura e changelog em toda entrega.
+- Proximo passo:
+  - aplicar a regra nas proximas features de cartoes, faturas e transacoes.
+
+## [2026-05-06] Correcao de perfil reativo e avatar
+
+- Contexto: alteracoes em perfil/avatar/tema so refletiam totalmente apos refresh manual.
+- Mudanca aplicada:
+  - dashboard passou a consumir `userProfile` de forma reativa no store.
+  - upload de avatar com nome unico por arquivo.
+  - persistencia imediata de `avatar_url` no perfil.
+  - remocao de avatar ajustada para bucket `avatars` e limpeza de referencia no perfil.
+- Motivo: eliminar inconsistencias de UI, cache e persistencia.
+- Impacto esperado:
+  - alteracoes de tema/avatar/nome aparecem sem refresh.
+  - menor risco de cache em troca de avatar.
+- Arquivos alterados:
+  - `src/components/Dashboard.jsx`
+  - `src/components/Settings.jsx`
+  - `src/storeSupabase.js`
+- SQL executado (se houver):
+```sql
+-- Ajustes de policies storage.objects para bucket 'avatars'
+-- com foldername(name)[1] = auth.uid()::text
+```
+- Evidencia de validacao:
+  - [x] Fluxo principal validado
+  - [x] Build ok
+  - [x] Sem erro novo no console
+- Riscos/pontos de atencao:
+  - manter alinhamento entre nome do bucket no codigo e nas policies.
+  - monitorar crescimento de arquivos se limpeza do avatar antigo falhar.
+- Proximo passo:
+  - revisar validacoes de entrada em cartoes e faturas.

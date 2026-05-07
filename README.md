@@ -1,54 +1,108 @@
-# DashRafael - Dashboard Financeiro Pessoal
+# Dashboard Rafael
 
-Um dashboard completo para controle financeiro pessoal, construído com React, Vite, Tailwind CSS e Recharts.
+Aplicacao web para gestao financeira pessoal com autenticacao Supabase, perfil de usuario e upload de avatar em Storage.
 
-## 🚀 Funcionalidades
+## Status atual
 
-- 💰 Rastreamento de despesas por categoria
-- 📊 Gráficos interativos
-- 📝 Histórico completo de transações
-- 💾 Armazenamento persistente com localStorage
-- 🎨 Interface moderna e responsiva
-- ➕ Criação de categorias personalizadas
-- 📁 Categorias pré-definidas: Aluguel, Alimentação, Saúde/Academia, Gasolina
+- Backend principal em Supabase (Auth, Postgres, Storage, RLS).
+- Gestao de perfil com nome, tema e avatar.
+- Avatar com upload em bucket `avatars`, politicas RLS e remocao persistente.
+- Tema do app configuravel pelo usuario e aplicado em tempo real.
+- Modulos ativos no dashboard: visao geral, cartoes e faturas.
 
-## 📋 Tecnologias
+## Stack
 
-- **React 18** - UI Library
-- **Vite** - Build tool
-- **Tailwind CSS** - Styling
-- **Recharts** - Gráficos
-- **Zustand** - Estado global
+- React 18
+- Vite 5
+- Tailwind CSS
+- Zustand
+- Supabase JS v2
+- Recharts
 
-## 🛠️ Instalação
+## Requisitos
+
+- Node.js 18+
+- npm 9+
+- Projeto Supabase ativo
+
+## Variaveis de ambiente
+
+Crie um arquivo `.env` na raiz:
+
+```env
+VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
+VITE_SUPABASE_ANON_KEY=SEU_ANON_KEY
+```
+
+## Instalação
 
 ```bash
 npm install
 ```
 
-## 📖 Desenvolvimento
+## Execucao local
 
 ```bash
 npm run dev
 ```
 
-## 🏗️ Build
+## Build de producao
 
 ```bash
 npm run build
 npm run preview
 ```
 
-## 📂 Estrutura do Projeto
+## Scripts
 
-```
+- `npm run dev`: inicia ambiente de desenvolvimento.
+- `npm run build`: gera build de producao.
+- `npm run preview`: sobe preview local da build.
+- `npm run lint`: executa lint.
+- `npm run lint:fix`: corrige lint automaticamente.
+
+## Estrutura principal
+
+```text
 src/
-├── components/     # Componentes React
-├── store.js       # Gerenciamento de estado (Zustand)
-├── App.jsx        # Componente principal
-└── index.css      # Estilos globais
+  components/
+    Dashboard.jsx
+    Settings.jsx
+    Sidebar.jsx
+    CreditCardsManager.jsx
+    InvoicesPanel.jsx
+  lib/
+    supabaseClient.js
+  storeSupabase.js
+  App.jsx
+docs/
+  00-visao-geral.md
+  01-arquitetura-tecnica.md
+  02-banco-e-rls.md
+  03-storage-avatar.md
+  04-processos-operacionais.md
+  05-runbook-debug.md
+  06-changelog-operacional.md
 ```
 
-## 📄 Licença
+## Fluxo de perfil e avatar
 
-MIT
+1. Usuario autenticado abre configuracoes.
+2. Alteracoes de nome/tema/avatar sao enviadas para Supabase.
+3. O store global (`storeSupabase`) atualiza `userProfile`.
+4. O dashboard renderiza os dados reativos do store sem refresh manual.
+
+## Documentacao completa
+
+Toda documentacao tecnica e operacional esta em `docs/`.
+
+## Arquivos legais
+
+- `TERMOS_SERVICO.md`
+- `POLITICA_PRIVACIDADE.md`
+
+## Notas importantes
+
+- Bucket de avatar padrao: `avatars`.
+- Politicas RLS de Storage devem usar `storage.foldername(name)[1] = auth.uid()::text` para validar pasta do usuario.
+- Em atualizacao de avatar, usar nome de arquivo unico para evitar problema de cache.
