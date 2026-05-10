@@ -34,6 +34,35 @@ Para cada mudanca relevante, adicione um bloco novo no topo com o template abaix
 
 ---
 
+## [2026-05-10] Adicao da regra de mentoria tecnica (modo professor)
+
+- Contexto: foi solicitado formalizar no projeto a atuacao do assistente como professor tecnico, com foco em aprendizado ativo.
+- Mudanca aplicada:
+  - adicionada secao "Regra de mentoria tecnica (modo professor)" em `docs/REGRAS_OPERACIONAIS.md`.
+  - adicionada exigencia de validacao de aprendizado no DoD em `docs/REGRAS_OPERACIONAIS.md`.
+  - adicionada secao "Modo professor (aprendizado guiado)" em `docs/04-processos-operacionais.md`.
+- Motivo: garantir consistencia pedagogica nas proximas implementacoes e reforcar raciocinio tecnico do usuario.
+- Impacto esperado:
+  - mais perguntas de conhecimento durante as tarefas.
+  - explicacoes linha por linha nas implementacoes.
+  - melhor consolidacao de logica e tomada de decisao tecnica.
+- Arquivos alterados:
+  - `docs/REGRAS_OPERACIONAIS.md`
+  - `docs/04-processos-operacionais.md`
+  - `docs/06-changelog-operacional.md`
+- SQL executado (se houver):
+```sql
+-- nao se aplica
+```
+- Evidencia de validacao:
+  - [x] Fluxo principal validado
+  - [x] Build ok
+  - [x] Sem erro novo no console
+- Riscos/pontos de atencao:
+  - manter equilibrio entre profundidade didatica e ritmo de entrega.
+- Proximo passo:
+  - aplicar o modo professor na implementacao da logica mensal de receitas e despesas.
+
 ## [2026-05-06] Criacao das regras operacionais v1.0
 
 - Contexto: foi definida a necessidade de padronizar fechamento de features com documentacao obrigatoria.
