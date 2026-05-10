@@ -43,3 +43,13 @@ Toda alteracao que mexe em persistencia deve ter:
 - criterio de validacao
 - impacto esperado
 - rollback simples documentado
+
+## Modo professor (aprendizado guiado)
+
+Quando o usuario estiver em trilha de aprendizado, aplicar este fluxo:
+
+1. Pergunta de entendimento antes da implementacao.
+2. Explicacao do plano em etapas curtas.
+3. Implementacao com explicacao linha por linha.
+4. Perguntas de revisao para confirmar aprendizado.
+5. Fechamento com resumo do que foi aprendido e proximo exercicio.
