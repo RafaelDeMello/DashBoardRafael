@@ -182,7 +182,10 @@ const useStore = create((set, get) => ({
           await get().updateUserProfile(userId, { avatar_url: publicUrl });
 
           // 9. Remover arquivo antigo, se existir
-          const oldPath = getStoragePathFromPublicUrl(previousAvatarUrl, "avatars");
+          const oldPath = getStoragePathFromPublicUrl(
+            previousAvatarUrl,
+            "avatars",
+          );
           if (oldPath && oldPath !== filePath) {
             const { error: removeError } = await supabase.storage
               .from("avatars")
@@ -423,8 +426,33 @@ const useStore = create((set, get) => ({
       set({ transactions: data || [] });
     } catch (err) {
       console.error("Erro ao carregar transações:", err);
+      set({ error: err.message });
     }
   },
+  loadTransactionsByPeriod: async (userId, month, year) => {
+    if (!userId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("month", month)
+        .eq("year", year)
+        .order("date", { ascending: false });
+
+      if (error) throw error;
+
+      set({ transactions: data || [] });
+      return data || [];
+    } catch (err) {
+      console.error("Erro ao carregar transações por período:", err);
+      set({ error: err.message });
+      return [];
+    }
+  },
+
+  
 
   loadCategories: async (userId) => {
     if (!userId) return;
