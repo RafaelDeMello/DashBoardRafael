@@ -30,7 +30,26 @@ Responsabilidades:
 - Sessao e perfil (`user`, `userProfile`).
 - CRUD de cartoes e faturas.
 - Carregamento de transacoes e categorias.
+- Carregamento mensal de transacoes por competencia.
+- Geracao automatica de lancamentos recorrentes por competencia.
 - Upload/remocao de avatar.
+
+## Fluxo mensal (receitas e despesas)
+
+1. O cliente define competencia ativa (`mes` e `ano`).
+2. O store chama `ensureMonthlyRecurringTransactions(userId, month, year)`.
+3. A funcao valida recorrentes ativos e identifica o que ja foi gerado no periodo.
+4. A funcao gera apenas faltantes (idempotencia) e ajusta dia invalido para ultimo dia do mes.
+5. O store recarrega o periodo com `loadTransactionsByPeriod(userId, month, year)`.
+
+## Estado do modulo mensal
+
+- Ja implementado no store:
+  - `loadTransactionsByPeriod`
+  - `ensureMonthlyRecurringTransactions`
+- Pendente de integracao de interface:
+  - seletor global de competencia no dashboard
+  - tela/aba de lancamentos por competencia
 
 ## Integracao Supabase
 

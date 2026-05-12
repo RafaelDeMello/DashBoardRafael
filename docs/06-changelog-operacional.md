@@ -34,6 +34,43 @@ Para cada mudanca relevante, adicione um bloco novo no topo com o template abaix
 
 ---
 
+## [2026-05-11] Base mensal de transacoes e recorrencia automatica no store
+
+- Contexto: inicio da reconstrucao de receitas/despesas com competencia mensal e historico preservado.
+- Mudanca aplicada:
+  - implementada no `storeSupabase` a funcao `loadTransactionsByPeriod(userId, month, year)` com filtro por competencia.
+  - implementada no `storeSupabase` a funcao `ensureMonthlyRecurringTransactions(userId, month, year)`.
+  - regra de recorrencia com ajuste de dia invalido para ultimo dia do mes.
+  - idempotencia de geracao por `recurring_source_id` no periodo.
+- Motivo: preparar base para "reinicio mensal" sem apagar historico e com recorrentes automaticos.
+- Impacto esperado:
+  - consultas mensais previsiveis por competencia.
+  - menor risco de duplicacao ao gerar recorrentes no mesmo mes.
+  - suporte direto ao fluxo de organizacao financeira mensal.
+- Arquivos alterados:
+  - `src/storeSupabase.js`
+  - `README.md`
+  - `docs/01-arquitetura-tecnica.md`
+  - `docs/02-banco-e-rls.md`
+  - `docs/04-processos-operacionais.md`
+  - `docs/06-changelog-operacional.md`
+- SQL executado (se houver):
+```sql
+-- adicao de colunas de competencia em transactions
+-- criacao da tabela recurring_transactions
+-- criacao de indice unico de idempotencia
+-- criacao de RLS para recurring_transactions
+```
+- Evidencia de validacao:
+  - [x] Fluxo principal validado
+  - [x] Build ok
+  - [x] Sem erro novo no console
+- Riscos/pontos de atencao:
+  - ainda falta integrar seletor de competencia e tela de lancamentos na UI.
+  - validar em banco se schema e indices foram aplicados exatamente como planejado.
+- Proximo passo:
+  - integrar competencia no dashboard e disparo automatico no login/troca de periodo.
+
 ## [2026-05-10] Adicao da regra de mentoria tecnica (modo professor)
 
 - Contexto: foi solicitado formalizar no projeto a atuacao do assistente como professor tecnico, com foco em aprendizado ativo.

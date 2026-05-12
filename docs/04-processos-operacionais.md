@@ -26,6 +26,15 @@ Padronizar como evoluir o projeto com seguranca e rastreabilidade.
 3. Validar reflexo reativo no `Dashboard` e `Sidebar`.
 4. Verificar upload, troca, remocao e reload.
 
+## Processo de mudanca mensal (receitas/despesas)
+
+1. Definir regra de negocio da competencia (historico preservado).
+2. Aplicar mudancas de schema (`competence_month`, `competence_year`, recorrencia).
+3. Implementar funcoes do store por periodo e geracao automatica.
+4. Garantir idempotencia para recorrentes no mesmo mes/ano.
+5. Validar cenarios de borda (fevereiro, dia 31, troca de mes).
+6. Registrar no changelog operacional.
+
 ## Processo de release local
 
 1. `npm run lint`

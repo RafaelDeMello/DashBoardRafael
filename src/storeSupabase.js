@@ -411,6 +411,115 @@ const useStore = create((set, get) => ({
   // ====================================
   // TRANSAÇÕES (apenas carregar - para gráficos)
   // ====================================
+  loadTransactionsByPeriod: async (userId, month, year) => {
+    if (!userId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("competence_month", month)
+        .eq("competence_year", year)
+        .order("date", { ascending: false });
+
+      if (error) throw error;
+
+      set({ transactions: data || [] });
+      return data || [];
+    } catch (err) {
+      console.error("Erro ao carregar transações por período:", err);
+      set({ error: err.message });
+      return [];
+    }
+  },
+
+  ensureMonthlyRecurringTransactions: async (userId, month, year) => {
+  if (!userId) return { created: 0 };
+
+  try {
+    // 1) Recorrentes ativos do usuário
+    const { data: recurring, error: recurringError } = await supabase
+      .from("recurring_transactions")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("is_active", true);
+
+    if (recurringError) throw recurringError;
+    if (!recurring || recurring.length === 0) return { created: 0 };
+
+    // 2) Já gerados no mês/ano (idempotência)
+    const { data: existing, error: existingError } = await supabase
+      .from("transactions")
+      .select("recurring_source_id")
+      .eq("user_id", userId)
+      .eq("competence_month", month)
+      .eq("competence_year", year)
+      .not("recurring_source_id", "is", null);
+
+    if (existingError) throw existingError;
+
+    const existingIds = new Set((existing || []).map((e) => e.recurring_source_id));
+
+    // 3) Buscar categorias para resolver nome (compatibilidade com coluna category antiga)
+    const { data: categories, error: catError } = await supabase
+      .from("categories")
+      .select("id, name")
+      .eq("user_id", userId);
+
+    if (catError) throw catError;
+
+    const categoryMap = new Map((categories || []).map((c) => [c.id, c.name]));
+
+    // 4) Função para último dia do mês
+    const getLastDayOfMonth = (m, y) => new Date(y, m, 0).getDate(); // m é 1..12
+
+    const lastDay = getLastDayOfMonth(month, year);
+    const inserts = [];
+
+    // 5) Montar transações faltantes
+    for (const r of recurring) {
+      if (existingIds.has(r.id)) continue;
+
+      const effectiveDay = Math.min(r.day_of_month, lastDay);
+      const dateISO = new Date(year, month - 1, effectiveDay).toISOString().slice(0, 10);
+
+      inserts.push({
+        user_id: userId,
+        date: dateISO,
+        type: r.type,
+        value: Number(r.value),
+        description: r.description || null,
+        category_id: r.category_id || null,
+        category: r.category_id ? (categoryMap.get(r.category_id) || "Sem categoria") : "Sem categoria",
+        credit_card_id: r.credit_card_id || null,
+        competence_month: month,
+        competence_year: year,
+        is_recurring_generated: true,
+        recurring_source_id: r.id,
+      });
+    }
+
+    // 6) Inserir apenas se tiver o que gerar
+    if (inserts.length > 0) {
+      const { error: insertError } = await supabase
+        .from("transactions")
+        .insert(inserts);
+
+      if (insertError) throw insertError;
+    }
+
+    // 7) Recarregar período
+    await get().loadTransactionsByPeriod(userId, month, year);
+
+    return { created: inserts.length };
+  } catch (err) {
+    console.error("Erro ao gerar recorrentes do mês:", err);
+    set({ error: err.message });
+    throw err;
+  }
+},
+
   loadTransactions: async (userId) => {
     if (!userId) return;
 
@@ -429,28 +538,7 @@ const useStore = create((set, get) => ({
       set({ error: err.message });
     }
   },
-  loadTransactionsByPeriod: async (userId, month, year) => {
-    if (!userId) return;
-
-    try {
-      const { data, error } = await supabase
-        .from("transactions")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("month", month)
-        .eq("year", year)
-        .order("date", { ascending: false });
-
-      if (error) throw error;
-
-      set({ transactions: data || [] });
-      return data || [];
-    } catch (err) {
-      console.error("Erro ao carregar transações por período:", err);
-      set({ error: err.message });
-      return [];
-    }
-  },
+  
 
   
 

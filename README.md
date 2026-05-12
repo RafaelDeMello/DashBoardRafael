@@ -9,6 +9,9 @@ Aplicacao web para gestao financeira pessoal com autenticacao Supabase, perfil d
 - Avatar com upload em bucket `avatars`, politicas RLS e remocao persistente.
 - Tema do app configuravel pelo usuario e aplicado em tempo real.
 - Modulos ativos no dashboard: visao geral, cartoes e faturas.
+- Base mensal de transacoes em andamento no store:
+  - carregamento por competencia (`competence_month` e `competence_year`)
+  - geracao automatica de recorrentes por mes com idempotencia
 
 ## Stack
 
@@ -91,6 +94,13 @@ docs/
 2. Alteracoes de nome/tema/avatar sao enviadas para Supabase.
 3. O store global (`storeSupabase`) atualiza `userProfile`.
 4. O dashboard renderiza os dados reativos do store sem refresh manual.
+
+## Fluxo mensal de receitas e despesas (em evolucao)
+
+1. O store carrega transacoes por periodo via `loadTransactionsByPeriod(userId, month, year)`.
+2. O store garante recorrentes do mes com `ensureMonthlyRecurringTransactions(userId, month, year)`.
+3. A geracao mensal evita duplicacao usando `recurring_source_id` + competencia.
+4. Regra de negocio: dia recorrente invalido no mes e ajustado para ultimo dia do mes.
 
 ## Documentacao completa
 
