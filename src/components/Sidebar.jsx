@@ -46,7 +46,6 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, sidebarBg =
             )}
           </div>
           <h1 className="text-2xl font-bold text-center">{displayName}</h1>
-          {userEmail && <p className="text-blue-200 text-sm mt-1 text-center">{userEmail}</p>}
         </div>
 
         {/* Menu Items */}

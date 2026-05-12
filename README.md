@@ -12,6 +12,7 @@ Aplicacao web para gestao financeira pessoal com autenticacao Supabase, perfil d
 - Base mensal de transacoes em andamento no store:
   - carregamento por competencia (`competence_month` e `competence_year`)
   - geracao automatica de recorrentes por mes com idempotencia
+- Dashboard com seletor mensal ativo na aba principal (navegacao de mes/ano + botao "Mes atual").
 
 ## Stack
 
@@ -99,8 +100,9 @@ docs/
 
 1. O store carrega transacoes por periodo via `loadTransactionsByPeriod(userId, month, year)`.
 2. O store garante recorrentes do mes com `ensureMonthlyRecurringTransactions(userId, month, year)`.
-3. A geracao mensal evita duplicacao usando `recurring_source_id` + competencia.
-4. Regra de negocio: dia recorrente invalido no mes e ajustado para ultimo dia do mes.
+3. O dashboard dispara geracao e recarga ao trocar competencia na aba Dashboard.
+4. A geracao mensal evita duplicacao usando `recurring_source_id` + competencia.
+5. Regra de negocio: dia recorrente invalido no mes e ajustado para ultimo dia do mes.
 
 ## Documentacao completa
 

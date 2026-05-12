@@ -34,6 +34,43 @@ Para cada mudanca relevante, adicione um bloco novo no topo com o template abaix
 
 ---
 
+## [2026-05-11] Integracao da competencia mensal na UI do Dashboard
+
+- Contexto: apos criar a base mensal no store, foi necessario conectar o fluxo na interface para troca de mes/ano sem refresh.
+- Mudanca aplicada:
+  - ajustado `src/components/Dashboard.jsx` para usar:
+    - `loadTransactionsByPeriod`
+    - `ensureMonthlyRecurringTransactions`
+  - adicionado seletor de competencia no topo da aba dashboard:
+    - mes anterior
+    - mes seguinte
+    - botao "Mes atual"
+  - adicionado estado de carregamento do periodo (`periodLoading`).
+- Motivo: refletir receitas/despesas por competencia mensal de forma reativa e previsivel.
+- Impacto esperado:
+  - mudancas de mes/ano atualizam cards e graficos sem reload manual.
+  - geracao de recorrentes acontece automaticamente ao trocar competencia.
+  - comportamento consistente para navegacao em meses passados e futuros.
+- Arquivos alterados:
+  - `src/components/Dashboard.jsx`
+  - `README.md`
+  - `docs/01-arquitetura-tecnica.md`
+  - `docs/04-processos-operacionais.md`
+  - `docs/06-changelog-operacional.md`
+- SQL executado (se houver):
+```sql
+-- nao se aplica
+```
+- Evidencia de validacao:
+  - [x] Fluxo principal validado
+  - [x] Build ok
+  - [x] Sem erro novo no console
+- Riscos/pontos de atencao:
+  - falta implementar aba dedicada de lancamentos por competencia.
+  - manter ordem de chamada (gerar recorrentes antes de carregar periodo).
+- Proximo passo:
+  - criar CRUD de lancamentos (receita/despesa) por competencia na UI.
+
 ## [2026-05-11] Base mensal de transacoes e recorrencia automatica no store
 
 - Contexto: inicio da reconstrucao de receitas/despesas com competencia mensal e historico preservado.

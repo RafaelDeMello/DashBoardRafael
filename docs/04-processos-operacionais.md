@@ -35,6 +35,13 @@ Padronizar como evoluir o projeto com seguranca e rastreabilidade.
 5. Validar cenarios de borda (fevereiro, dia 31, troca de mes).
 6. Registrar no changelog operacional.
 
+Checklist minimo de validacao mensal na UI:
+
+- trocar de mes no dashboard atualiza cards/graficos
+- voltar para mes anterior preserva historico
+- navegar para meses futuros e permitido
+- botao "Mes atual" restaura competencia corrente
+
 ## Processo de release local
 
 1. `npm run lint`

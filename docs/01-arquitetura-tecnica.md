@@ -15,6 +15,8 @@
 - `src/components/Dashboard.jsx`
   - Orquestra tabs e carrega dados iniciais.
   - Le dados do `userProfile` de forma reativa.
+  - Controla competencia mensal (mes/ano) na aba dashboard.
+  - Dispara geracao automatica de recorrentes e recarga por periodo.
 - `src/components/Settings.jsx`
   - Atualiza nome, tema e avatar.
   - Aciona funcoes de upload/remocao no store.
@@ -48,8 +50,22 @@ Responsabilidades:
   - `loadTransactionsByPeriod`
   - `ensureMonthlyRecurringTransactions`
 - Pendente de integracao de interface:
-  - seletor global de competencia no dashboard
   - tela/aba de lancamentos por competencia
+
+## Integracao atual de competencia no Dashboard
+
+- Estado de UI:
+  - `selectedMonth`
+  - `selectedYear`
+  - `periodLoading`
+- Navegacao:
+  - mes anterior
+  - mes seguinte
+  - voltar para mes atual
+- Fluxo de carregamento ao mudar competencia:
+  1. `ensureMonthlyRecurringTransactions(userId, month, year)`
+  2. `loadTransactionsByPeriod(userId, month, year)`
+  3. recargas auxiliares (`loadCategories`, `loadCreditCards`, `loadUserProfile`)
 
 ## Integracao Supabase
 
