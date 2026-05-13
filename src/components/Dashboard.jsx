@@ -92,34 +92,33 @@ export default function Dashboard({
   const loadUserProfile = useStore((state) => state.loadUserProfile);
 
   const now = new Date();
-  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1); // Mês atual (1-12)
-  const [selectedYear, setSelectedYear] = useState(now.getFullYear()); // Ano atual
+  const [period, setPeriod] = useState({
+    month: now.getMonth() + 1,
+    year: now.getFullYear(),
+  });
   const [periodLoading, setPeriodLoading] = useState(false);
 
   const handlePrevMonth = () => {
-    setSelectedMonth((prev) => {
-      if (prev === 1) {
-        setSelectedYear((y) => y - 1);
-        return 12;
+    setPeriod((prev) => {
+      if (prev.month === 1) {
+        return { month: 12, year: prev.year - 1 };
       }
-      return prev - 1;
+      return { month: prev.month - 1, year: prev.year };
     });
   };
 
   const handleNextMonth = () => {
-    setSelectedMonth((prev) => {
-      if (prev === 12) {
-        setSelectedYear((y) => y + 1);
-        return 1;
+    setPeriod((prev) => {
+      if (prev.month === 12) {
+        return { month: 1, year: prev.year + 1 };
       }
-      return prev + 1;
+      return { month: prev.month + 1, year: prev.year };
     });
   };
 
   const handleGoToCurrentMonth = () => {
     const current = new Date();
-    setSelectedMonth(current.getMonth() + 1);
-    setSelectedYear(current.getFullYear());
+    setPeriod({ month: current.getMonth() + 1, year: current.getFullYear() });
   };
 
   const formatPeriodLabel = (month, year) => {
@@ -138,10 +137,10 @@ export default function Dashboard({
         setPeriodLoading(true);
         await ensureMonthlyRecurringTransactions(
           user.id,
-          selectedMonth,
-          selectedYear,
+          period.month,
+          period.year,
         );
-        await loadTransactionsByPeriod(user.id, selectedMonth, selectedYear);
+        await loadTransactionsByPeriod(user.id, period.month, period.year);
         await loadCategories(user.id);
         await loadCreditCards(user.id);
         await loadUserProfile(user.id);
@@ -155,8 +154,8 @@ export default function Dashboard({
     run();
   }, [
     user?.id,
-    selectedMonth,
-    selectedYear,
+    period.month,
+    period.year,
     ensureMonthlyRecurringTransactions,
     loadTransactionsByPeriod,
     loadCategories,
@@ -195,7 +194,7 @@ export default function Dashboard({
                     {"<"}
                   </button>
                   <span className="font-semibold capitalize">
-                    {formatPeriodLabel(selectedMonth, selectedYear)}
+                    {formatPeriodLabel(period.month, period.year)}
                   </span>
                   <button
                     onClick={handleNextMonth}
