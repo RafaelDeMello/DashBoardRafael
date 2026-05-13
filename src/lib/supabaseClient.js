@@ -22,6 +22,12 @@ try {
   
   supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
   console.log('✓ Supabase inicializado com sucesso')
+
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === 'TOKEN_REFRESHED') {
+      console.log('✓ Token JWT renovado automaticamente')
+    }
+  })
 } catch (error) {
   console.error('✗ Erro ao inicializar Supabase:', error.message)
   // Criar mock para evitar crashes

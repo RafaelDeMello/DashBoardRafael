@@ -17,6 +17,23 @@ const useStore = create((set, get) => ({
   // ====================================
   setUser: (user) => set({ user }),
 
+  ensureActiveSession: async () => {
+    const { data: sessionData, error: sessionError } =
+      await supabase.auth.getSession();
+
+    if (sessionError) throw sessionError;
+    if (sessionData?.session) return sessionData.session;
+
+    const { data: refreshData, error: refreshError } =
+      await supabase.auth.refreshSession();
+
+    if (refreshError || !refreshData?.session) {
+      throw new Error("Sua sessão expirou. Faça login novamente.");
+    }
+
+    return refreshData.session;
+  },
+
   loadUserProfile: async (userId) => {
     if (!userId) {
       console.warn("⚠ userId não fornecido");
@@ -64,6 +81,8 @@ const useStore = create((set, get) => ({
 
   updateUserProfile: async (userId, updates) => {
     try {
+      await get().ensureActiveSession();
+
       // Primeiro verifica se o perfil existe
       const { data: existingProfile, error: checkError } = await supabase
         .from("profiles")
@@ -110,6 +129,8 @@ const useStore = create((set, get) => ({
   },
 
   uploadAvatar: async (userId, file) => {
+    await get().ensureActiveSession();
+
     // Validar tipo de arquivo
     const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
@@ -221,6 +242,8 @@ const useStore = create((set, get) => ({
 
   removeAvatar: async (userId) => {
     try {
+      await get().ensureActiveSession();
+
       const avatarUrl = get().userProfile?.avatar_url || null;
       const marker = "/storage/v1/object/public/avatars/";
       let filePath = null;

@@ -60,7 +60,7 @@ export default function SummaryCards({ transactions, categories, theme = default
       title: 'Este Mês',
       value: `R$ ${(monthlyIncome - monthlyExpenses).toFixed(2)}`,
       icon: Clock,
-      gradient: secondaryColor,
+      gradient: tertiaryColor,
       subtext: `Receita: R$ ${monthlyIncome.toFixed(2)} | Despesa: R$ ${monthlyExpenses.toFixed(2)}`,
     },
     {

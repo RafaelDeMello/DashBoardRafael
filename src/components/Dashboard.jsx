@@ -220,10 +220,11 @@ export default function Dashboard({
                 theme={theme}
                 creditCards={creditCards}
               />
-              <ChartsDashboard
+               <ChartsDashboard
                 transactions={transactions}
                 categories={categories}
               />
+        
             </>
           )}
 

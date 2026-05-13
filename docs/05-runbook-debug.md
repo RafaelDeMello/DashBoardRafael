@@ -12,6 +12,29 @@ Verificar:
 - Retorno de `supabase.auth.getUser()`.
 - Erros no console do navegador.
 
+### Erro especifico: `JWT expired`
+
+Sintoma:
+
+- Operacoes de update/insert retornam erro de token expirado.
+
+Causa tipica:
+
+- Sessao local ficou invalida e a requisicao foi feita sem token ativo.
+
+Correcao aplicada no projeto:
+
+- Antes de operacoes criticas (`updateUserProfile`, `uploadAvatar`, `removeAvatar`), executar `ensureActiveSession()` no store.
+- Se nao houver sessao ativa, tentar `refreshSession()`.
+- Se refresh falhar, orientar novo login.
+
+Validacao manual:
+
+1. Fazer login.
+2. Aguardar alguns minutos sem interacao.
+3. Tentar salvar configuracoes.
+4. Confirmar que token e renovado ou que app solicita novo login com mensagem clara.
+
 ## 2. Alteracao de perfil nao aparece na hora
 
 Verificar:

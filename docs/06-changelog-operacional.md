@@ -34,6 +34,41 @@ Para cada mudanca relevante, adicione um bloco novo no topo com o template abaix
 
 ---
 
+## [2026-05-11] Mitigacao de erro JWT expired em configuracoes
+
+- Contexto: atualizacoes de perfil/avatar passaram a falhar com `Erro ao atualizar perfil: JWT expired`.
+- Mudanca aplicada:
+  - adicionada funcao `ensureActiveSession()` no `src/storeSupabase.js`.
+  - validacao de sessao antes de operacoes criticas:
+    - `updateUserProfile`
+    - `uploadAvatar`
+    - `removeAvatar`
+  - fallback de refresh via `supabase.auth.refreshSession()` com mensagem clara quando expirar de vez.
+  - adicionado listener de `TOKEN_REFRESHED` no `src/lib/supabaseClient.js` para rastreio.
+  - documentado procedimento no runbook (`docs/05-runbook-debug.md`).
+- Motivo: reduzir falha de persistencia por expiracao de token em sessoes longas.
+- Impacto esperado:
+  - menor incidencia de erro JWT ao salvar configuracoes.
+  - recuperacao automatica de sessao quando possivel.
+  - feedback mais claro ao usuario quando novo login for necessario.
+- Arquivos alterados:
+  - `src/storeSupabase.js`
+  - `src/lib/supabaseClient.js`
+  - `docs/05-runbook-debug.md`
+  - `docs/06-changelog-operacional.md`
+- SQL executado (se houver):
+```sql
+-- nao se aplica
+```
+- Evidencia de validacao:
+  - [x] Fluxo principal validado
+  - [x] Build ok
+  - [x] Sem erro novo no console
+- Riscos/pontos de atencao:
+  - se refresh token estiver invalido, usuario ainda precisara autenticar novamente.
+- Proximo passo:
+  - validar em sessao longa (idle) e confirmar comportamento de refresh/login.
+
 ## [2026-05-11] Integracao da competencia mensal na UI do Dashboard
 
 - Contexto: apos criar a base mensal no store, foi necessario conectar o fluxo na interface para troca de mes/ano sem refresh.
