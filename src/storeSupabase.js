@@ -582,7 +582,7 @@ const useStore = create((set, get) => ({
       console.error("Erro ao carregar categorias:", err);
     }
   },
-
+   
   // ====================================
   // LIMPAR DADOS (LOGOUT)
   // ====================================
