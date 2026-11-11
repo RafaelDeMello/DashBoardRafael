@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   boolean,
   index,
   integer,
@@ -75,6 +76,12 @@ export const sections = pgTable(
       .references(() => lists.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
     position: integer("position").notNull(),
+    // De qual seção do MODELO esta veio (para mudanças "permanentes" acharem o par)
+    sourceId: uuid("source_id").references((): AnyPgColumn => sections.id, {
+      onDelete: "set null",
+    }),
+    // Exclusão reversível: preenchido = removida (permite "Desfazer")
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
   (t) => [index("sections_list_idx").on(t.listId)],
 );
@@ -91,6 +98,11 @@ export const items = pgTable(
     done: boolean("done").notNull().default(false),
     doneAt: timestamp("done_at", { withTimezone: true }),
     position: integer("position").notNull(),
+    // De qual item do MODELO este veio
+    sourceId: uuid("source_id").references((): AnyPgColumn => items.id, {
+      onDelete: "set null",
+    }),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
   (t) => [index("items_section_idx").on(t.sectionId)],
 );
