@@ -1,120 +1,42 @@
-# Dashboard Rafael
+# Only-Tasks
 
-Aplicacao web para gestao financeira pessoal com autenticacao Supabase, perfil de usuario e upload de avatar em Storage.
+App de organização pessoal: rotinas diárias em listas marcáveis, com progresso por
+dia, semana e mês, acessível pelo celular e pelo computador.
 
-## Status atual
-
-- Backend principal em Supabase (Auth, Postgres, Storage, RLS).
-- Gestao de perfil com nome, tema e avatar.
-- Avatar com upload em bucket `avatars`, politicas RLS e remocao persistente.
-- Tema do app configuravel pelo usuario e aplicado em tempo real.
-- Modulos ativos no dashboard: visao geral, cartoes e faturas.
-- Base mensal de transacoes em andamento no store:
-  - carregamento por competencia (`competence_month` e `competence_year`)
-  - geracao automatica de recorrentes por mes com idempotencia
-- Dashboard com seletor mensal ativo na aba principal (navegacao de mes/ano + botao "Mes atual").
+Projeto pessoal e de aprendizado. O código antigo (dashboard financeiro em React +
+Supabase) está preservado na tag `legacy-dashboard-v1`.
 
 ## Stack
 
-- React 18
-- Vite 5
-- Tailwind CSS
-- Zustand
-- Supabase JS v2
-- Recharts
+Next.js 16 · TypeScript · PostgreSQL 17 (Docker) · Drizzle ORM · argon2id
 
-## Requisitos
+## Como rodar localmente
 
-- Node.js 18+
-- npm 9+
-- Projeto Supabase ativo
-
-## Variaveis de ambiente
-
-Crie um arquivo `.env` na raiz:
-
-```env
-VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
-VITE_SUPABASE_ANON_KEY=SEU_ANON_KEY
-```
-
-## Instalação
+Requisitos: Node 22+, Docker.
 
 ```bash
 npm install
+cp .env.example .env        # depois troque POSTGRES_PASSWORD (e a mesma senha na DATABASE_URL)
+docker compose up -d db     # Postgres em 127.0.0.1:5435
+npm run db:migrate          # cria as tabelas
+npm run user:create         # cria seu usuário (a senha é pedida no terminal, oculta)
+npm run dev                 # http://localhost:3000
 ```
 
-## Execucao local
+A porta do banco (5435) foi escolhida porque 5432, 5433 e 5434 já estavam em uso.
+Para mudar, ajuste `DB_PORT` e `DATABASE_URL` no `.env`.
 
-```bash
-npm run dev
-```
+## Segurança (regras do projeto)
 
-## Build de producao
+- Senhas com argon2id; nunca em texto puro.
+- Não há tela de cadastro: contas só são criadas por `npm run user:create`.
+- Sessão por cookie `HttpOnly` + `SameSite=Lax` (`Secure` e prefixo `__Host-` em produção);
+  o banco guarda só o SHA-256 do token.
+- A checagem de sessão vive na camada de acesso a dados (`src/lib/dal.ts`), não só no proxy.
+- `.env` nunca vai para o git.
 
-```bash
-npm run build
-npm run preview
-```
+## Documentação
 
-## Scripts
-
-- `npm run dev`: inicia ambiente de desenvolvimento.
-- `npm run build`: gera build de producao.
-- `npm run preview`: sobe preview local da build.
-- `npm run lint`: executa lint.
-- `npm run lint:fix`: corrige lint automaticamente.
-
-## Estrutura principal
-
-```text
-src/
-  components/
-    Dashboard.jsx
-    Settings.jsx
-    Sidebar.jsx
-    CreditCardsManager.jsx
-    InvoicesPanel.jsx
-  lib/
-    supabaseClient.js
-  storeSupabase.js
-  App.jsx
-docs/
-  00-visao-geral.md
-  01-arquitetura-tecnica.md
-  02-banco-e-rls.md
-  03-storage-avatar.md
-  04-processos-operacionais.md
-  05-runbook-debug.md
-  06-changelog-operacional.md
-```
-
-## Fluxo de perfil e avatar
-
-1. Usuario autenticado abre configuracoes.
-2. Alteracoes de nome/tema/avatar sao enviadas para Supabase.
-3. O store global (`storeSupabase`) atualiza `userProfile`.
-4. O dashboard renderiza os dados reativos do store sem refresh manual.
-
-## Fluxo mensal de receitas e despesas (em evolucao)
-
-1. O store carrega transacoes por periodo via `loadTransactionsByPeriod(userId, month, year)`.
-2. O store garante recorrentes do mes com `ensureMonthlyRecurringTransactions(userId, month, year)`.
-3. O dashboard dispara geracao e recarga ao trocar competencia na aba Dashboard.
-4. A geracao mensal evita duplicacao usando `recurring_source_id` + competencia.
-5. Regra de negocio: dia recorrente invalido no mes e ajustado para ultimo dia do mes.
-
-## Documentacao completa
-
-Toda documentacao tecnica e operacional esta em `docs/`.
-
-## Arquivos legais
-
-- `TERMOS_SERVICO.md`
-- `POLITICA_PRIVACIDADE.md`
-
-## Notas importantes
-
-- Bucket de avatar padrao: `avatars`.
-- Politicas RLS de Storage devem usar `storage.foldername(name)[1] = auth.uid()::text` para validar pasta do usuario.
-- Em atualizacao de avatar, usar nome de arquivo unico para evitar problema de cache.
+- [Especificação do MVP](docs/especificacao.md)
+- [Glossário](docs/glossario.md)
+- [Decisões técnicas](docs/decisoes/)
