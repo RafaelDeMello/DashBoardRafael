@@ -8,6 +8,13 @@
       "when": 1794320846981,
       "tag": "0000_gigantic_winter_soldier",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794398001911,
+      "tag": "0001_cloudy_demogoblin",
+      "breakpoints": true
     }
   ]
 }
