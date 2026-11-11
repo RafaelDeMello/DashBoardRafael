@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+/* Tema "universo retrô": cinzas e azuis frios com mais azul, toques de violeta,
+   rosa e amarelo-suave. Estilo de texto de videogame dos anos 80/90:
+   fontes pixeladas, sombras duras e caixas quadradas. */
+:root {
+  --bg: #060813;
+  --surface: #0c1022;
+  --surface-2: #151b3b;
+  --line: #2b3a8f;
+  --ink: #eaf0ff;
+  --muted: #8a96c2;
+  --accent: #6ea8ff;
+  --electric: #3d6bff;
+  --violet: #9a85ff;
+  --pink: #ff7ac6;
+  --gold: #ffd166;
+  /* Caixas e botões: cinza escuro neutro + ciano + branco */
+  --neon: #19e6ff;
+  --carbon: #12141a;
+  --carbon-2: #1b1e27;
+  --steel: #2f3441;
+  color-scheme: dark;
+}
+
+/* Tamanho dos quadradinhos do calendário: cresce com a tela
+   (em monitor grande, 7px vira um pontinho). */
+:root {
+  --cal-cell: 10px;
+  --cal-gap: 2px;
+}
+@media (min-width: 1536px) {
+  :root {
+    --cal-cell: 12px;
+  }
+}
+@media (min-width: 1920px) {
+  :root {
+    --cal-cell: 14px;
+    --cal-gap: 3px;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-electric: var(--electric);
+  --color-violet: var(--violet);
+  --color-pink: var(--pink);
+  --color-gold: var(--gold);
+  --color-neon: var(--neon);
+  --color-carbon: var(--carbon);
+  --color-carbon-2: var(--carbon-2);
+  --color-steel: var(--steel);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-retro: var(--font-vt);
+  --font-pixel: var(--font-pixel);
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Fundo na paleta do portfólio do Rafael: preto-azulado quase puro (#0a0a0f)
+   com um brilho azul-acinzentado bem suave no centro e vinheta nas bordas.
+   As estrelas (poucas e discretas) são desenhadas em canvas por cima. */
+.space-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 48% 42% at 50% 44%, rgba(34, 42, 72, 0.42), transparent 72%),
+    radial-gradient(ellipse 70% 40% at 50% 112%, rgba(26, 40, 80, 0.30), transparent 72%),
+    radial-gradient(ellipse 110% 110% at 50% 50%, transparent 50%, rgba(0, 0, 0, 0.55) 100%),
+    #0a0a0f;
+  animation: nebula 30s ease-in-out infinite alternate;
+}
+
+@keyframes nebula {
+  from { filter: brightness(1); }
+  to { filter: brightness(1.18); }
+}
+
+/* Linhas de varredura bem leves, de monitor CRT antigo */
+.scanlines {
+  position: fixed;
+  inset: 0;
+  z-index: 1; /* só no fundo: a folha branca e os painéis ficam limpos */
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.16) 0,
+    rgba(0, 0, 0, 0.16) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* Cursor piscando estilo terminal */
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.blink { animation: blink 1.1s steps(1) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .space-bg { animation: none; }
+  .blink { animation: none; }
+}
