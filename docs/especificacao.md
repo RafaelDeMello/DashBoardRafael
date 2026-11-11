@@ -53,6 +53,41 @@ o conteúdo é livre.
 - Funciona bem no celular e no computador.
 - Login com e-mail e senha. Contas criadas apenas pelo administrador (Rafael).
 
+## Regras em vigor (implementadas)
+
+### Modelo padrão e alcance das alterações
+- Cada usuário tem um **modelo padrão** (por enquanto um só; a tela de vários modelos vem depois).
+- Na folha há o interruptor **"Alterações valem: Só hoje | Sempre"** (a escolha é lembrada).
+  - **Só hoje:** a mudança fica só naquele dia.
+  - **Sempre:** a mudança de estrutura (adicionar, renomear, descrição, remover, reordenar)
+    vai também para o modelo. Dias já criados não mudam.
+- **Marcar/desmarcar nunca vai para o modelo.**
+- Cada seção/item do dia guarda de qual linha do modelo veio (`source_id`), para a
+  mudança permanente achar o par certo.
+
+### Criar um dia
+- **Usar o modelo** (opção principal quando o modelo tem conteúdo).
+- **Copiar o dia anterior** (o dia mais recente que existir antes da data).
+- **Começar do zero.**
+- Em qualquer cópia, tudo nasce desmarcado.
+
+### Menu "..." do dia
+- **Copiar este dia para** uma data (recusa se a data já tiver lista).
+- **Salvar este dia como modelo** (substitui o modelo padrão).
+- **Apagar este dia** (pede confirmação; não tem desfazer).
+
+### Lista
+- Editar título e descrição de um item (clicar no item); renomear seção (clicar no nome).
+- Arrastar pela alça para reordenar itens (dentro da seção) e seções. Funciona com
+  mouse, toque e teclado.
+- Remover item ou seção mostra **"Desfazer"** por alguns segundos (a exclusão é
+  reversível no banco: coluna `deleted_at`).
+- A tela responde na hora (estado otimista) e confirma com o servidor em seguida.
+
+### Sequência de dias
+- Um dia conta quando **50% ou mais** dos itens foram feitos. Se hoje ainda não chegou
+  lá, a contagem parte de ontem.
+
 ## Fora do escopo do MVP
 
 - Horário nos itens (será avaliado quando o uso estiver consolidado).

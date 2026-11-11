@@ -38,6 +38,19 @@ branca, onde se lê e marca a lista, é limpa e amigável.
 - Dias vazios têm só um contorno quase invisível; hoje tem contorno branco fino.
 - Clicar em um dia abre aquele dia. A versão grande vive na aba Mês da folha.
 
+## Interações na folha
+
+- **Interruptor "Alterações valem: Só hoje | Sempre"** no topo da lista, à direita.
+  Em "Sempre" aparece o aviso "Mudanças também vão para o modelo dos próximos dias".
+- **Alça de arrastar** (seis pontinhos) na margem esquerda de cada item e seção;
+  aparece ao passar o mouse e fica sempre visível no toque.
+- **Clicar no item** abre o editor logo abaixo (título + descrição, Salvar/Cancelar).
+  Itens com descrição mostram um ícone de folha.
+- **Remover** (`×` no item, lixeira na seção) aparece ao passar o mouse; ao remover,
+  surge o aviso escuro "… removido · Desfazer" na base da tela.
+- **Menu "..."** ao lado das setas de dia: copiar para outra data, salvar como modelo,
+  apagar o dia.
+
 ## Regra de fontes
 
 | Onde | Fonte |
