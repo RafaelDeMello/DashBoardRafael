@@ -5,7 +5,7 @@ import { SummaryCard } from "@/components/day/summary-card";
 import { Starfield } from "@/components/starfield";
 import { addDays, isValidISODate, monthBounds, todayISO } from "@/lib/date";
 import { verifySession } from "@/lib/dal";
-import { getDay, getPreviousDayDate, getProgressRange } from "@/lib/days";
+import { getDay, getPreviousDayDate, getProgressRange, templateHasContent } from "@/lib/days";
 import { streak } from "@/lib/progress";
 
 export default async function Home({
@@ -21,13 +21,17 @@ export default async function Home({
   const today = todayISO();
   const date = raw && isValidISODate(raw) ? raw : today;
 
-  const expanded = (await cookies()).get("menu")?.value === "expanded";
+  const jar = await cookies();
+  const expanded = jar.get("menu")?.value === "expanded";
+  // "Alterações valem: Só hoje | Sempre" (preferência guardada pela própria lista)
+  const initialPermanent = jar.get("scope")?.value === "permanent";
 
   // Uma consulta cobre o calendário do mês e a sequência (120 dias para trás)
-  const [day, previousDate, progress] = await Promise.all([
+  const [day, previousDate, progress, templateAvailable] = await Promise.all([
     getDay(user.id, date),
     getPreviousDayDate(user.id, date),
     getProgressRange(user.id, addDays(date, -120), monthBounds(date).end),
+    templateHasContent(user.id),
   ]);
 
   const sections =
@@ -51,7 +55,9 @@ export default async function Home({
           today={today}
           day={day}
           previousDate={previousDate}
+          templateAvailable={templateAvailable}
           menuExpanded={expanded}
+          initialPermanent={initialPermanent}
         />
         {/* Cartão de resumo: com o menu recolhido aparece a partir de 1024px; com o menu
             expandido só em telas largas (1536px+), onde sobra espaço. Quando está oculto,
