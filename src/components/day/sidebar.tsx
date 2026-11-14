@@ -1,12 +1,11 @@
 import Link from "next/link";
 import {
-  CalendarDays,
-  CalendarRange,
   ChevronsLeft,
   ChevronsRight,
   LayoutList,
   ListChecks,
   LogOut,
+  Settings,
   type LucideIcon,
 } from "lucide-react";
 import { setMenuAction } from "@/app/actions";
@@ -14,18 +13,22 @@ import { logout } from "@/app/login/actions";
 import type { DayProgress } from "@/lib/progress";
 import { MonthCalendar } from "./month-calendar";
 
-const NAV: { label: string; icon: LucideIcon; href?: string }[] = [
-  { label: "DIA", icon: ListChecks, href: "/" },
-  { label: "SEMANA", icon: CalendarDays },
-  { label: "MÊS", icon: CalendarRange },
-  { label: "MODELOS", icon: LayoutList },
+export type NavKey = "tasks" | "modelos" | "configuracoes";
+
+// Ordem dos módulos no menu
+const NAV: { key: NavKey; label: string; icon: LucideIcon; href: string }[] = [
+  { key: "tasks", label: "TASKS", icon: ListChecks, href: "/" },
+  { key: "modelos", label: "MODELOS", icon: LayoutList, href: "/modelos" },
+  { key: "configuracoes", label: "CONFIGURAÇÕES", icon: Settings, href: "/configuracoes" },
 ];
 
 export function Sidebar({
+  active,
   expanded,
   date,
   progress,
 }: {
+  active: NavKey;
   expanded: boolean;
   date: string;
   progress: Record<string, DayProgress>;
@@ -36,7 +39,7 @@ export function Sidebar({
     <aside
       className={`relative z-30 flex-none border-r border-[#1e222c] py-[18px] text-[#8b93a5] ${
         expanded
-          ? "w-[196px] max-md:absolute max-md:inset-y-0 max-md:left-0 max-md:bg-[#0a0a0f]"
+          ? "w-[212px] max-md:absolute max-md:inset-y-0 max-md:left-0 max-md:bg-[#0a0a0f]"
           : "w-[58px]"
       }`}
     >
@@ -61,30 +64,25 @@ export function Sidebar({
         </div>
 
         <nav className={`flex flex-col gap-0.5 ${expanded ? "" : "items-center"}`} aria-label="Principal">
-          {NAV.map(({ label, icon: Icon, href }) => {
-            const active = !!href;
+          {NAV.map(({ key, label, icon: Icon, href }) => {
+            const isActive = key === active;
             const base = expanded
-              ? "flex items-center gap-2.5 rounded px-2.5 py-0.5 font-retro text-[21px] tracking-[0.08em]"
+              ? "flex items-center gap-2.5 rounded px-2.5 py-0.5 font-retro text-[20px] tracking-[0.06em]"
               : "flex h-[38px] w-[38px] items-center justify-center rounded";
-            const state = active
+            const state = isActive
               ? "border-l-[3px] border-[#6fa8d6] bg-[#1d2230] text-[#e9ecf3]"
-              : "opacity-50";
-            const icon = <Icon size={expanded ? 17 : 20} className={active ? "text-[#9ccaf0]" : ""} />;
-            return href ? (
-              <Link key={label} href={href} title={label} className={`${base} ${state}`}>
-                {icon}
+              : "hover:bg-[#151926] hover:text-[#c9cfdb]";
+            return (
+              <Link
+                key={key}
+                href={href}
+                title={label}
+                aria-current={isActive ? "page" : undefined}
+                className={`${base} ${state}`}
+              >
+                <Icon size={expanded ? 17 : 20} className={isActive ? "text-[#9ccaf0]" : ""} />
                 {expanded && label}
               </Link>
-            ) : (
-              <span
-                key={label}
-                title={`${label} (em breve)`}
-                aria-disabled="true"
-                className={`${base} ${state} cursor-not-allowed`}
-              >
-                {icon}
-                {expanded && label}
-              </span>
             );
           })}
         </nav>

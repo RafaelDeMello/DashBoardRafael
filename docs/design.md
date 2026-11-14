@@ -10,9 +10,19 @@ branca, onde se lê e marca a lista, é limpa e amigável.
 
 ## Layout da tela do dia
 
-- **Menu à esquerda** (recolhido por padrão): só ícones (Dia, Semana, Mês, Modelos, Sair).
-- **Folha branca** no centro: ícone, data, abas Dia/Semana/Mês, seções recolhíveis
-  (Manhã, Tarde, Noite) com itens marcáveis.
+- **Menu à esquerda** (recolhido por padrão): só ícones. Módulos, nesta ordem:
+  **Tasks, Modelos, Configurações** (Modelos e Configurações abrem uma página "em breve").
+  Não há abas Dia/Semana/Mês.
+- **Folha branca** no centro. No topo, **uma barra contínua e compacta, centralizada**, com
+  **cinco cards encostados** (sem espaço, separados só por um traço fino), cada um com uma
+  informação. As duas pontas têm o mesmo tamanho (124px), então o trio de dias fica
+  exatamente no centro:
+  1. sol + dia da semana ("Sábado"); no celular, só o ícone;
+  2. `‹ 13` (dia anterior, clicável);
+  3. `14` (dia atual, preenchido de azul-petróleo);
+  4. `15 ›` (próximo dia, clicável);
+  5. calendário, que abre um seletor de data com o atalho "Voltar para hoje".
+  Abaixo, as seções recolhíveis (Manhã, Tarde, Noite) com itens marcáveis.
 - **Cartão `RESUMO.SYS` à direita** (só com o menu recolhido): progresso em %, barra em
   blocos, progresso por seção, dias seguidos.
 

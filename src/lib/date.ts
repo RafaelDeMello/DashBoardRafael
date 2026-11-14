@@ -30,6 +30,20 @@ export function formatTitle(value: string): string {
   return short.charAt(0).toUpperCase() + short.slice(1);
 }
 
+/** "Sábado", "Terça" (dia da semana, sem "-feira"). */
+export function formatWeekday(value: string): string {
+  const long = new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC", weekday: "long" }).format(
+    new Date(`${value}T00:00:00Z`),
+  );
+  const short = long.replace("-feira", "");
+  return short.charAt(0).toUpperCase() + short.slice(1);
+}
+
+/** Número do dia no mês (sem zero à esquerda): "2026-11-04" -> 4. */
+export function dayOfMonth(value: string): number {
+  return Number(value.slice(8));
+}
+
 /** Primeiro e último dia do mês de `value`. */
 export function monthBounds(value: string): { start: string; end: string } {
   const [y, m] = value.split("-").map(Number);

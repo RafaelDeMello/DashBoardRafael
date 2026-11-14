@@ -1,8 +1,7 @@
 import { cookies } from "next/headers";
+import { AppShell } from "@/components/app-shell";
 import { DayPaper } from "@/components/day/day-paper";
-import { Sidebar } from "@/components/day/sidebar";
 import { SummaryCard } from "@/components/day/summary-card";
-import { Starfield } from "@/components/starfield";
 import { addDays, isValidISODate, monthBounds, todayISO } from "@/lib/date";
 import { verifySession } from "@/lib/dal";
 import { getDay, getPreviousDayDate, getProgressRange, templateHasContent } from "@/lib/days";
@@ -45,23 +44,15 @@ export default async function Home({
   const done = sections.reduce((n, s) => n + s.done, 0);
 
   return (
-    <div className="relative flex h-screen overflow-hidden">
-      <Starfield />
-      <Sidebar expanded={expanded} date={date} progress={progress} />
-
-      <main className="relative z-10 flex min-w-0 flex-1 gap-5 px-3 pt-5 md:px-5">
-        <DayPaper
-          date={date}
-          today={today}
-          day={day}
-          previousDate={previousDate}
-          templateAvailable={templateAvailable}
-          menuExpanded={expanded}
-          initialPermanent={initialPermanent}
-        />
-        {/* Cartão de resumo: com o menu recolhido aparece a partir de 1024px; com o menu
-            expandido só a partir de 1280px (largura CSS, já descontados o zoom e a escala do Windows). Quando está oculto,
-            o progresso aparece como faixa dentro da folha (ver DayPaper). */}
+    <AppShell
+      active="tasks"
+      expanded={expanded}
+      date={date}
+      progress={progress}
+      // Cartão de resumo: com o menu recolhido aparece a partir de 1024px; com o menu
+      // expandido só a partir de 1280px (largura CSS, já descontados zoom e escala do
+      // Windows). Quando está oculto, o progresso vira uma faixa dentro da folha.
+      aside={
         <aside
           className={`hidden w-[204px] flex-none ${
             expanded ? "min-[1280px]:block" : "lg:block"
@@ -76,7 +67,17 @@ export default async function Home({
             />
           )}
         </aside>
-      </main>
-    </div>
+      }
+    >
+      <DayPaper
+        date={date}
+        today={today}
+        day={day}
+        previousDate={previousDate}
+        templateAvailable={templateAvailable}
+        menuExpanded={expanded}
+        initialPermanent={initialPermanent}
+      />
+    </AppShell>
   );
 }
