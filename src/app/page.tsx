@@ -60,11 +60,11 @@ export default async function Home({
           initialPermanent={initialPermanent}
         />
         {/* Cartão de resumo: com o menu recolhido aparece a partir de 1024px; com o menu
-            expandido só em telas largas (1536px+), onde sobra espaço. Quando está oculto,
+            expandido só a partir de 1280px (largura CSS, já descontados o zoom e a escala do Windows). Quando está oculto,
             o progresso aparece como faixa dentro da folha (ver DayPaper). */}
         <aside
           className={`hidden w-[204px] flex-none ${
-            expanded ? "min-[1536px]:block" : "lg:block"
+            expanded ? "min-[1280px]:block" : "lg:block"
           }`}
         >
           {day && (

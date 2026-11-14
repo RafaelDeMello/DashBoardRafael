@@ -128,7 +128,7 @@ export function DayPaper({
           day={day}
           initialPermanent={initialPermanent}
           // A faixa de progresso só aparece quando o cartão de resumo está oculto
-          stripClassName={menuExpanded ? "min-[1536px]:hidden" : "lg:hidden"}
+          stripClassName={menuExpanded ? "min-[1280px]:hidden" : "lg:hidden"}
         />
       )}
     </article>

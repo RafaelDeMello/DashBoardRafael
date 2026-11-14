@@ -21,7 +21,7 @@ branca, onde se lê e marca a lista, é limpa e amigável.
 - Alça redonda na borda do menu, com setas (`››` abrir, `‹‹` fechar) e dica
   "Expandir menu" / "Recolher menu".
 - **Expandido:** mostra os nomes (DIA, SEMANA, MÊS, MODELOS), o calendário do mês e
-  "Recolher menu". O cartão de resumo **some**, exceto em **telas largas (1536px+)**,
+  "Recolher menu". O cartão de resumo **some**, exceto em **telas a partir de 1280px de largura CSS** (já descontados zoom e escala do Windows),
   onde continua visível. Quando o cartão está oculto, o progresso do dia aparece como
   uma faixa no topo da folha.
 - O app lembra o estado (aberto/recolhido) entre visitas.
