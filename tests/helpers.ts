@@ -23,6 +23,21 @@ export async function createTestUser(label = "u"): Promise<string> {
   return row.id;
 }
 
+/** Cria um usuário com senha REAL (hash argon2id), para testar o login de verdade. */
+export async function createLoginUser(
+  password: string,
+  label = "login",
+): Promise<{ id: string; email: string; name: string }> {
+  const { hashPassword } = await import("@/lib/password");
+  const email = `${label}-${randomUUID()}@teste.local`;
+  const [row] = await db
+    .insert(users)
+    .values({ email, name: label, passwordHash: await hashPassword(password) })
+    .returning({ id: users.id });
+  created.push(row.id);
+  return { id: row.id, email, name: label };
+}
+
 /** Apaga os usuários criados (listas, seções e itens saem junto, por cascade). */
 export async function cleanupTestUsers() {
   if (created.length === 0) return;

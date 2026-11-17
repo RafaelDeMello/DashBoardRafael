@@ -42,12 +42,21 @@ O que é coberto:
 - **Autorização** (`tests/authz-days.test.ts`): um usuário não lê nem altera dados de outro,
   mesmo sabendo os ids (marcar, editar, remover, reordenar, copiar, apagar, modelo).
 - **Ações do servidor** (`tests/actions-auth.test.ts`): sem sessão, nenhuma ação chega aos dados.
-- **Proxy**, **senhas (argon2id)**, **limite de tentativas de login**, regras de **progresso e
+- **Login e sessão ponta a ponta** (`tests/auth-flow.test.ts`), com o código real (argon2,
+  banco de teste, `session.ts`, `dal.ts`, `proxy.ts`) e só o armazenamento de cookies do
+  Next simulado: cookie `HttpOnly`/`SameSite`/`Secure` em produção, banco guardando só o
+  SHA-256 do token, mensagem genérica e tempo igual para e-mail inexistente, validação de
+  entrada, limite de tentativas (por e-mail e por IP, com expiração), expiração e renovação
+  da sessão, logout por aparelho e as duas camadas de proteção (proxy e `verifySession`).
+- **Proxy**, **senhas (argon2id)**, **limite de tentativas** isolado, regras de **progresso e
   sequência** e de **datas**.
 
-Os testes de segurança foram validados quebrando o código de propósito (tirar a checagem de
-dono, tirar a checagem de sessão de uma ação e desligar o redirecionamento do proxy): em
-cada caso o teste certo falhou.
+Os testes de segurança foram validados quebrando o código de propósito: em cada sabotagem
+(tirar a checagem de dono, de sessão ou de validade, guardar o token puro, cookie sem
+`HttpOnly`, desligar o limite de tentativas, logout que não apaga, entre outras) o teste
+certo falhou.
+
+Limite conhecido: não há teste de navegador. A interface continua sendo verificada à mão.
 
 ## Segurança (regras do projeto)
 
