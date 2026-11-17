@@ -26,6 +26,29 @@ npm run dev                 # http://localhost:3000
 A porta do banco (5435) foi escolhida porque 5432, 5433 e 5434 já estavam em uso.
 Para mudar, ajuste `DB_PORT` e `DATABASE_URL` no `.env`.
 
+## Testes
+
+```bash
+npm test             # roda todos os testes uma vez
+npm run test:watch   # roda de novo a cada alteração
+```
+
+Precisam do banco no ar (`docker compose up -d db`). Eles usam um banco **separado**,
+`onlytasks_test`, criado e migrado automaticamente no mesmo servidor: **nunca tocam nos
+seus dados reais** (há travas que recusam rodar em qualquer banco que não termine em `_test`).
+
+O que é coberto:
+
+- **Autorização** (`tests/authz-days.test.ts`): um usuário não lê nem altera dados de outro,
+  mesmo sabendo os ids (marcar, editar, remover, reordenar, copiar, apagar, modelo).
+- **Ações do servidor** (`tests/actions-auth.test.ts`): sem sessão, nenhuma ação chega aos dados.
+- **Proxy**, **senhas (argon2id)**, **limite de tentativas de login**, regras de **progresso e
+  sequência** e de **datas**.
+
+Os testes de segurança foram validados quebrando o código de propósito (tirar a checagem de
+dono, tirar a checagem de sessão de uma ação e desligar o redirecionamento do proxy): em
+cada caso o teste certo falhou.
+
 ## Segurança (regras do projeto)
 
 - Senhas com argon2id; nunca em texto puro.
