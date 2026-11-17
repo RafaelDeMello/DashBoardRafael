@@ -56,7 +56,7 @@ o conteúdo é livre.
 ## Regras em vigor (implementadas)
 
 ### Modelo padrão e alcance das alterações
-- Cada usuário tem um **modelo padrão** (por enquanto um só; a tela de vários modelos vem depois).
+- O primeiro modelo criado é o **modelo principal**: é o usado por "Usar o modelo" quando não se escolhe outro e por mudanças "Sempre" em dias que não nasceram de um modelo. Dias criados de um modelo guardam a ligação (`source_id`), então "Sempre" muda o modelo certo.
 - Na folha há o interruptor **"Alterações valem: Só hoje | Sempre"** (a escolha é lembrada).
   - **Só hoje:** a mudança fica só naquele dia.
   - **Sempre:** a mudança de estrutura (adicionar, renomear, descrição, remover, reordenar)

@@ -4,7 +4,7 @@ import { DayPaper } from "@/components/day/day-paper";
 import { SummaryCard } from "@/components/day/summary-card";
 import { addDays, isValidISODate, monthBounds, todayISO } from "@/lib/date";
 import { verifySession } from "@/lib/dal";
-import { getDay, getPreviousDayDate, getProgressRange, templateHasContent } from "@/lib/days";
+import { getDay, getPreviousDayDate, getProgressRange, listTemplates } from "@/lib/days";
 import { streak } from "@/lib/progress";
 
 export default async function Home({
@@ -26,12 +26,13 @@ export default async function Home({
   const initialPermanent = jar.get("scope")?.value === "permanent";
 
   // Uma consulta cobre o calendário do mês e a sequência (120 dias para trás)
-  const [day, previousDate, progress, templateAvailable] = await Promise.all([
+  const [day, previousDate, progress, allTemplates] = await Promise.all([
     getDay(user.id, date),
     getPreviousDayDate(user.id, date),
     getProgressRange(user.id, addDays(date, -120), monthBounds(date).end),
-    templateHasContent(user.id),
+    listTemplates(user.id),
   ]);
+  const templates = allTemplates.filter((t) => t.sectionCount > 0).map((t) => ({ id: t.id, name: t.name }));
 
   const sections =
     day?.sections.map((s) => ({
@@ -74,7 +75,7 @@ export default async function Home({
         today={today}
         day={day}
         previousDate={previousDate}
-        templateAvailable={templateAvailable}
+        templates={templates}
         menuExpanded={expanded}
         initialPermanent={initialPermanent}
       />

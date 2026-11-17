@@ -241,6 +241,7 @@ const gripClass =
 
 function ItemRow({
   item,
+  template,
   editing,
   onEdit,
   onToggle,
@@ -248,6 +249,7 @@ function ItemRow({
   onRemove,
 }: {
   item: ItemData;
+  template: boolean;
   editing: boolean;
   onEdit: (open: boolean) => void;
   onToggle: () => void;
@@ -276,6 +278,11 @@ function ItemRow({
         >
           <GripVertical size={14} />
         </button>
+        {template ? (
+          <span aria-hidden className="-ml-1.5 flex h-[18px] w-[18px] flex-none items-center justify-center">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#c4c3c0]" />
+          </span>
+        ) : (
         <button
           type="button"
           disabled={pending}
@@ -290,6 +297,7 @@ function ItemRow({
         >
           {item.done && <Check size={12} strokeWidth={3} />}
         </button>
+        )}
         <button
           type="button"
           disabled={pending}
@@ -323,6 +331,7 @@ function ItemRow({
 
 function SectionBlock({
   section,
+  template,
   collapsed,
   onToggleCollapsed,
   permanent,
@@ -332,6 +341,7 @@ function SectionBlock({
   setEditingId,
 }: {
   section: SectionData;
+  template: boolean;
   collapsed: boolean;
   onToggleCollapsed: () => void;
   permanent: boolean;
@@ -428,7 +438,9 @@ function SectionBlock({
         )}
 
         <span className="flex-none text-xs text-[#9b9a97]">
-          {done} de {section.items.length}
+          {template
+            ? `${section.items.length} ${section.items.length === 1 ? "item" : "itens"}`
+            : `${done} de ${section.items.length}`}
         </span>
         <button
           type="button"
@@ -463,6 +475,7 @@ function SectionBlock({
                   <ItemRow
                     key={item.id}
                     item={item}
+                    template={template}
                     editing={editingId === item.id}
                     onEdit={(open) => setEditingId(open ? item.id : null)}
                     onToggle={() =>
@@ -513,14 +526,19 @@ export function DayBoard({
   day,
   initialPermanent,
   stripClassName,
+  template = false,
 }: {
   day: DayData;
   initialPermanent: boolean;
   stripClassName: string;
+  /** Editor de um modelo: sem "Só hoje/Sempre", sem progresso e sem marcar como feito. */
+  template?: boolean;
 }) {
   const [optimistic, apply] = useOptimistic(day, reduce);
   const [, startTransition] = useTransition();
-  const [permanent, setPermanent] = useState(initialPermanent);
+  const [permanentChoice, setPermanent] = useState(initialPermanent);
+  // Num modelo não existe "espelhar no modelo": as mudanças já são nele
+  const permanent = template ? false : permanentChoice;
   const [editingId, setEditingId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set());
   const [toast, setToast] = useState<Toast | null>(null);
@@ -564,12 +582,16 @@ export function DayBoard({
 
   return (
     <>
-      <ScopeToggle permanent={permanent} onChange={changeScope} />
-      <ProgressStrip
-        done={allItems.filter((i) => i.done).length}
-        total={allItems.length}
-        className={stripClassName}
-      />
+      {!template && (
+        <>
+          <ScopeToggle permanent={permanent} onChange={changeScope} />
+          <ProgressStrip
+            done={allItems.filter((i) => i.done).length}
+            total={allItems.length}
+            className={stripClassName}
+          />
+        </>
+      )}
 
       {optimistic.sections.length === 0 && (
         <p className="mb-3 text-sm text-[#9b9a97]">Comece adicionando uma seção, por exemplo “Manhã”.</p>
@@ -586,6 +608,7 @@ export function DayBoard({
             <SectionBlock
               key={section.id}
               section={section}
+              template={template}
               collapsed={collapsed.has(section.id)}
               onToggleCollapsed={() =>
                 setCollapsed((prev) => {

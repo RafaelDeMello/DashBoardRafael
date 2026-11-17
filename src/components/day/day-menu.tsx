@@ -52,7 +52,7 @@ export function DayMenu({ date }: { date: string }) {
           <button type="submit" className="w-full rounded px-2 py-1.5 text-left hover:bg-[#f1f1ef]">
             Salvar este dia como modelo
             <span className="block text-xs text-[#9b9a97]">
-              Substitui o modelo usado em “Usar o modelo”.
+              Substitui o modelo principal (o mais antigo).
             </span>
           </button>
         </form>

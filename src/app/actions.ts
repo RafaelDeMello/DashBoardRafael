@@ -24,6 +24,12 @@ const date = z.string().refine(isValidISODate);
 const permanent = z.boolean();
 const ids = z.array(id).max(500);
 
+// Itens e seções também aparecem no editor de Modelos: atualiza as duas telas
+const refresh = () => {
+  revalidatePath("/");
+  revalidatePath("/modelos");
+};
+
 // ---------- Preferências ----------
 
 /** Lembra se o menu lateral está expandido (cookie, lido no servidor: sem "piscar"). */
@@ -37,7 +43,7 @@ export async function setMenuAction(formData: FormData) {
     secure: process.env.NODE_ENV === "production",
     maxAge: 60 * 60 * 24 * 365,
   });
-  revalidatePath("/");
+  refresh();
 }
 
 // ---------- Dias (formulários) ----------
@@ -47,16 +53,19 @@ export async function createDayAction(formData: FormData) {
   const d = date.safeParse(formData.get("date"));
   const mode = z.enum(["empty", "copy", "template"]).safeParse(formData.get("mode"));
   if (!d.success || !mode.success) return;
-  await days.createDay(user.id, d.data, mode.data);
-  revalidatePath("/");
+  // templateId é opcional: sem ele, usa o modelo principal
+  const tpl = id.safeParse(formData.get("templateId"));
+  await days.createDay(user.id, d.data, mode.data, tpl.success ? tpl.data : undefined);
+  refresh();
 }
 
 export async function saveAsTemplateAction(formData: FormData) {
   const user = await verifySession();
   const d = date.safeParse(formData.get("date"));
   if (!d.success) return;
-  await days.saveDayAsTemplate(user.id, d.data);
-  revalidatePath("/");
+  const tpl = id.safeParse(formData.get("templateId"));
+  await days.saveDayAsTemplate(user.id, d.data, tpl.success ? tpl.data : undefined);
+  refresh();
 }
 
 export async function deleteDayAction(formData: FormData) {
@@ -64,7 +73,7 @@ export async function deleteDayAction(formData: FormData) {
   const d = date.safeParse(formData.get("date"));
   if (!d.success) return;
   await days.deleteDay(user.id, d.data);
-  revalidatePath("/");
+  refresh();
 }
 
 export type CopyDayState = { error?: string } | undefined;
@@ -80,8 +89,61 @@ export async function copyDayAction(_prev: CopyDayState, formData: FormData): Pr
   if (result === "exists") return { error: "Esse dia já tem lista. Apague-a antes de copiar." };
   if (result === "missing") return { error: "O dia de origem não existe mais." };
 
-  revalidatePath("/");
+  refresh();
   redirect(`/?d=${to.data}`);
+}
+
+// ---------- Modelos ----------
+
+const templateName = z.string().trim().min(1).max(100);
+
+export type TemplateFormState = { error?: string } | undefined;
+
+export async function createTemplateAction(
+  _prev: TemplateFormState,
+  formData: FormData,
+): Promise<TemplateFormState> {
+  const user = await verifySession();
+  const name = templateName.safeParse(formData.get("name"));
+  if (!name.success) return { error: "Digite um nome para o modelo." };
+  const copy = id.safeParse(formData.get("copyFrom"));
+  const created = await days.createTemplate(user.id, name.data, copy.success ? copy.data : undefined);
+  if (!created) return { error: "Modelo de origem não encontrado." };
+  refresh();
+  redirect(`/modelos?m=${created}`);
+}
+
+export async function renameTemplate(input: { templateId: string; name: string }) {
+  const user = await verifySession();
+  const p = z.object({ templateId: id, name: templateName }).safeParse(input);
+  if (!p.success) return;
+  await days.renameTemplate(user.id, p.data.templateId, p.data.name);
+  refresh();
+}
+
+export async function deleteTemplateAction(formData: FormData) {
+  const user = await verifySession();
+  const tpl = id.safeParse(formData.get("templateId"));
+  if (!tpl.success) return;
+  await days.deleteTemplate(user.id, tpl.data);
+  refresh();
+  redirect("/modelos");
+}
+
+/** "Usar em um dia": cria o dia na data escolhida a partir do modelo e abre esse dia. */
+export async function useTemplateOnDayAction(
+  _prev: TemplateFormState,
+  formData: FormData,
+): Promise<TemplateFormState> {
+  const user = await verifySession();
+  const tpl = id.safeParse(formData.get("templateId"));
+  const d = date.safeParse(formData.get("date"));
+  if (!tpl.success) return { error: "Modelo inválido." };
+  if (!d.success) return { error: "Escolha uma data válida." };
+  const created = await days.createDay(user.id, d.data, "template", tpl.data);
+  if (!created) return { error: "Esse dia já tem lista. Apague-a antes de usar o modelo." };
+  refresh();
+  redirect(`/?d=${d.data}`);
 }
 
 // ---------- Itens (chamadas diretas da lista interativa) ----------
@@ -91,7 +153,7 @@ export async function toggleItem(input: { itemId: string; done: boolean }) {
   const p = z.object({ itemId: id, done: z.boolean() }).safeParse(input);
   if (!p.success) return;
   await days.setItemDone(user.id, p.data.itemId, p.data.done);
-  revalidatePath("/");
+  refresh();
 }
 
 export async function addItem(input: { sectionId: string; title: string; permanent: boolean }) {
@@ -99,7 +161,7 @@ export async function addItem(input: { sectionId: string; title: string; permane
   const p = z.object({ sectionId: id, title, permanent }).safeParse(input);
   if (!p.success) return;
   await days.addItem(user.id, p.data.sectionId, p.data.title, p.data.permanent);
-  revalidatePath("/");
+  refresh();
 }
 
 export async function updateItem(input: {
@@ -117,7 +179,7 @@ export async function updateItem(input: {
     { title: p.data.title, description: p.data.description },
     p.data.permanent,
   );
-  revalidatePath("/");
+  refresh();
 }
 
 /** deleted=true remove (reversível); deleted=false desfaz a remoção. */
@@ -126,7 +188,7 @@ export async function setItemDeleted(input: { itemId: string; deleted: boolean; 
   const p = z.object({ itemId: id, deleted: z.boolean(), permanent }).safeParse(input);
   if (!p.success) return;
   await days.setItemDeleted(user.id, p.data.itemId, p.data.deleted, p.data.permanent);
-  revalidatePath("/");
+  refresh();
 }
 
 export async function reorderItems(input: { sectionId: string; ids: string[]; permanent: boolean }) {
@@ -134,7 +196,7 @@ export async function reorderItems(input: { sectionId: string; ids: string[]; pe
   const p = z.object({ sectionId: id, ids, permanent }).safeParse(input);
   if (!p.success) return;
   await days.reorderItems(user.id, p.data.sectionId, p.data.ids, p.data.permanent);
-  revalidatePath("/");
+  refresh();
 }
 
 // ---------- Seções ----------
@@ -144,7 +206,7 @@ export async function addSection(input: { listId: string; title: string; permane
   const p = z.object({ listId: id, title, permanent }).safeParse(input);
   if (!p.success) return;
   await days.addSection(user.id, p.data.listId, p.data.title, p.data.permanent);
-  revalidatePath("/");
+  refresh();
 }
 
 export async function renameSection(input: { sectionId: string; title: string; permanent: boolean }) {
@@ -152,7 +214,7 @@ export async function renameSection(input: { sectionId: string; title: string; p
   const p = z.object({ sectionId: id, title, permanent }).safeParse(input);
   if (!p.success) return;
   await days.renameSection(user.id, p.data.sectionId, p.data.title, p.data.permanent);
-  revalidatePath("/");
+  refresh();
 }
 
 export async function setSectionDeleted(input: {
@@ -164,7 +226,7 @@ export async function setSectionDeleted(input: {
   const p = z.object({ sectionId: id, deleted: z.boolean(), permanent }).safeParse(input);
   if (!p.success) return;
   await days.setSectionDeleted(user.id, p.data.sectionId, p.data.deleted, p.data.permanent);
-  revalidatePath("/");
+  refresh();
 }
 
 export async function reorderSections(input: { listId: string; ids: string[]; permanent: boolean }) {
@@ -172,5 +234,5 @@ export async function reorderSections(input: { listId: string; ids: string[]; pe
   const p = z.object({ listId: id, ids, permanent }).safeParse(input);
   if (!p.success) return;
   await days.reorderSections(user.id, p.data.listId, p.data.ids, p.data.permanent);
-  revalidatePath("/");
+  refresh();
 }

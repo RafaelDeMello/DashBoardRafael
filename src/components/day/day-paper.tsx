@@ -17,11 +17,13 @@ const SEG = "flex h-[58px] items-center justify-center transition-colors";
 function CreateButton({
   date,
   mode,
+  templateId,
   primary,
   children,
 }: {
   date: string;
   mode: "template" | "copy" | "empty";
+  templateId?: string;
   primary: boolean;
   children: React.ReactNode;
 }) {
@@ -29,6 +31,7 @@ function CreateButton({
     <form action={createDayAction}>
       <input type="hidden" name="date" value={date} />
       <input type="hidden" name="mode" value={mode} />
+      {templateId && <input type="hidden" name="templateId" value={templateId} />}
       <button
         type="submit"
         className={
@@ -49,7 +52,7 @@ export function DayPaper({
   today,
   day,
   previousDate,
-  templateAvailable,
+  templates,
   menuExpanded,
   initialPermanent,
 }: {
@@ -57,7 +60,8 @@ export function DayPaper({
   today: string;
   day: DayData | null;
   previousDate: string | null;
-  templateAvailable: boolean;
+  /** Modelos com conteúdo, para oferecer ao criar o dia. */
+  templates: { id: string; name: string }[];
   menuExpanded: boolean;
   initialPermanent: boolean;
 }) {
@@ -138,13 +142,13 @@ export function DayPaper({
         <div className="mt-6 rounded-lg bg-[#f7f7f5] p-6 text-center">
           <p className="text-sm text-[#787774]">Este dia ainda não tem lista.</p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            {templateAvailable && (
-              <CreateButton date={date} mode="template" primary>
-                Usar o modelo
+            {templates.map((t) => (
+              <CreateButton key={t.id} date={date} mode="template" templateId={t.id} primary>
+                {templates.length === 1 ? "Usar o modelo" : `Usar: ${t.name}`}
               </CreateButton>
-            )}
+            ))}
             {previousDate && (
-              <CreateButton date={date} mode="copy" primary={!templateAvailable}>
+              <CreateButton date={date} mode="copy" primary={templates.length === 0}>
                 Copiar o dia {dm(previousDate)}
               </CreateButton>
             )}

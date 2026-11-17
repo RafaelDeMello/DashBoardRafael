@@ -1,5 +1,6 @@
 import "server-only";
 import { and, asc, desc, eq, gte, inArray, isNull, lt, lte, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { db } from "@/db";
 import { items, lists, sections } from "@/db/schema";
 import type { DayProgress } from "@/lib/progress";
@@ -146,6 +147,118 @@ async function getTemplateId(ex: Executor, userId: string, create: boolean) {
   return created.id;
 }
 
+async function findOwnedTemplate(ex: Executor, userId: string, templateId: string) {
+  const [row] = await ex
+    .select({ id: lists.id, name: lists.name })
+    .from(lists)
+    .where(and(eq(lists.id, templateId), eq(lists.userId, userId), eq(lists.kind, "template")))
+    .limit(1);
+  return row;
+}
+
+export type TemplateSummary = {
+  id: string;
+  name: string;
+  sectionCount: number;
+  itemCount: number;
+  /** Em quantos dias este modelo foi usado (dias criados a partir dele). */
+  usedDays: number;
+};
+export type TemplateData = { id: string; name: string; sections: SectionData[] };
+
+/** Modelos do usuário, do mais antigo (o principal) ao mais novo. */
+export async function listTemplates(userId: string): Promise<TemplateSummary[]> {
+  const tpls = await db
+    .select({ id: lists.id, name: lists.name })
+    .from(lists)
+    .where(and(eq(lists.userId, userId), eq(lists.kind, "template")))
+    .orderBy(asc(lists.createdAt), asc(lists.id));
+  if (tpls.length === 0) return [];
+  const ids = tpls.map((t) => t.id);
+
+  const secCounts = await db
+    .select({ listId: sections.listId, n: sql<number>`count(*)::int` })
+    .from(sections)
+    .where(and(inArray(sections.listId, ids), isNull(sections.deletedAt)))
+    .groupBy(sections.listId);
+
+  const itemCounts = await db
+    .select({ listId: sections.listId, n: sql<number>`count(${items.id})::int` })
+    .from(items)
+    .innerJoin(sections, eq(sections.id, items.sectionId))
+    .where(and(inArray(sections.listId, ids), isNull(sections.deletedAt), isNull(items.deletedAt)))
+    .groupBy(sections.listId);
+
+  const tplSection = alias(sections, "tpl_section");
+  const used = await db
+    .select({ listId: tplSection.listId, n: sql<number>`count(distinct ${sections.listId})::int` })
+    .from(sections)
+    .innerJoin(tplSection, eq(sections.sourceId, tplSection.id))
+    .where(inArray(tplSection.listId, ids))
+    .groupBy(tplSection.listId);
+
+  const pick = (rows: { listId: string; n: number }[], id: string) =>
+    rows.find((r) => r.listId === id)?.n ?? 0;
+  return tpls.map((t) => ({
+    id: t.id,
+    name: t.name,
+    sectionCount: pick(secCounts, t.id),
+    itemCount: pick(itemCounts, t.id),
+    usedDays: pick(used, t.id),
+  }));
+}
+
+export async function getTemplate(userId: string, templateId: string): Promise<TemplateData | null> {
+  const tpl = await findOwnedTemplate(db, userId, templateId);
+  if (!tpl) return null;
+  const secs = await loadSections(db, tpl.id);
+  return {
+    id: tpl.id,
+    name: tpl.name,
+    sections: secs.map((s) => ({
+      id: s.id,
+      title: s.title,
+      items: s.items.map((i) => ({
+        id: i.id,
+        title: i.title,
+        description: i.description,
+        done: false,
+      })),
+    })),
+  };
+}
+
+/** Cria um modelo vazio ou, com `copyFromId`, uma cópia de outro modelo seu. Devolve o id. */
+export async function createTemplate(
+  userId: string,
+  name: string,
+  copyFromId?: string,
+): Promise<string | null> {
+  return db.transaction(async (tx) => {
+    if (copyFromId && !(await findOwnedTemplate(tx, userId, copyFromId))) return null;
+    const [created] = await tx
+      .insert(lists)
+      .values({ userId, kind: "template", name })
+      .returning({ id: lists.id });
+    if (copyFromId) await copyStructure(tx, copyFromId, created.id, "keep");
+    return created.id;
+  });
+}
+
+export async function renameTemplate(userId: string, templateId: string, name: string) {
+  await db
+    .update(lists)
+    .set({ name })
+    .where(and(eq(lists.id, templateId), eq(lists.userId, userId), eq(lists.kind, "template")));
+}
+
+/** Apaga o modelo. Os dias já criados continuam (só perdem a ligação com ele). */
+export async function deleteTemplate(userId: string, templateId: string) {
+  await db
+    .delete(lists)
+    .where(and(eq(lists.id, templateId), eq(lists.userId, userId), eq(lists.kind, "template")));
+}
+
 /** Existe um modelo com pelo menos uma seção? (para oferecer "Usar o modelo") */
 export async function templateHasContent(userId: string): Promise<boolean> {
   const tplId = await getTemplateId(db, userId, false);
@@ -193,21 +306,40 @@ async function copyStructure(tx: Tx, fromListId: string, toListId: string, link:
 
 export type CreateMode = "empty" | "copy" | "template";
 
-/** Cria o dia: vazio, copiando o dia anterior ou a partir do modelo. */
-export async function createDay(userId: string, date: string, mode: CreateMode) {
-  await db.transaction(async (tx) => {
+/**
+ * Cria o dia: vazio, copiando o dia anterior ou a partir de um modelo.
+ * Sem `templateId`, usa o modelo principal (o mais antigo). Devolve false se o dia já existia
+ * ou se o `templateId` não é um modelo deste usuário (nada é criado nesse caso).
+ */
+export async function createDay(
+  userId: string,
+  date: string,
+  mode: CreateMode,
+  templateId?: string,
+): Promise<boolean> {
+  return db.transaction(async (tx) => {
+    let chosenTemplate: string | null = null;
+    if (mode === "template") {
+      if (templateId) {
+        if (!(await findOwnedTemplate(tx, userId, templateId))) return false;
+        chosenTemplate = templateId;
+      } else {
+        chosenTemplate = await getTemplateId(tx, userId, false);
+      }
+    }
+
     // ON CONFLICT DO NOTHING: se o dia já existe (duplo clique), não faz nada
     const [created] = await tx
       .insert(lists)
       .values({ userId, kind: "day", name: date, date })
       .onConflictDoNothing()
       .returning({ id: lists.id });
-    if (!created || mode === "empty") return;
+    if (!created) return false;
+    if (mode === "empty") return true;
 
     if (mode === "template") {
-      const tplId = await getTemplateId(tx, userId, false);
-      if (tplId) await copyStructure(tx, tplId, created.id, "self");
-      return;
+      if (chosenTemplate) await copyStructure(tx, chosenTemplate, created.id, "self");
+      return true;
     }
 
     const [prev] = await tx
@@ -217,6 +349,7 @@ export async function createDay(userId: string, date: string, mode: CreateMode) 
       .orderBy(desc(lists.date))
       .limit(1);
     if (prev) await copyStructure(tx, prev.id, created.id, "keep");
+    return true;
   });
 }
 
@@ -247,12 +380,13 @@ export async function deleteDay(userId: string, date: string) {
     .where(and(eq(lists.userId, userId), eq(lists.kind, "day"), eq(lists.date, date)));
 }
 
-/** Substitui o modelo padrão pela estrutura deste dia. */
-export async function saveDayAsTemplate(userId: string, date: string) {
+/** Substitui um modelo (por padrão, o principal) pela estrutura deste dia. */
+export async function saveDayAsTemplate(userId: string, date: string, templateId?: string) {
   await db.transaction(async (tx) => {
     const day = await findDay(tx, userId, date);
     if (!day) return;
-    const tplId = await getTemplateId(tx, userId, true);
+    if (templateId && !(await findOwnedTemplate(tx, userId, templateId))) return;
+    const tplId = templateId ?? (await getTemplateId(tx, userId, true));
 
     // Zera o modelo (os source_id que apontavam para ele viram NULL sozinhos)
     await tx.delete(sections).where(eq(sections.listId, tplId));
