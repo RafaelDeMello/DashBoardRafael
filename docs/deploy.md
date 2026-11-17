@@ -63,9 +63,17 @@ docker compose --env-file .env.production -f docker-compose.prod.yml ps
 O primeiro build demora alguns minutos. Quando tudo estiver `healthy`, o Caddy pede o
 certificado sozinho (pode levar cerca de um minuto na primeira vez).
 
-## 4. Criar o seu usuário
+## 4. Criar o administrador e o seu usuário
 
-Não existe tela de cadastro. A senha é pedida no terminal, oculta (mínimo 12 caracteres):
+Quem se cadastra pela tela fica **aguardando liberação**; o administrador libera em `/admin`.
+O administrador e o seu próprio usuário são criados no servidor. A senha é pedida no terminal,
+oculta (mínimo 12 caracteres). Primeiro o administrador (só vê o painel de acessos):
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml \n  run --rm -it migrate node scripts/create-user.ts --admin
+```
+
+Depois o seu usuário comum (já nasce liberado):
 
 ```bash
 docker compose --env-file .env.production -f docker-compose.prod.yml \

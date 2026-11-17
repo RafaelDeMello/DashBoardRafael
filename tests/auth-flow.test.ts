@@ -139,7 +139,7 @@ describe("login com sucesso", () => {
     const user = await createLoginUser(PASSWORD);
     await attempt(user.email, PASSWORD);
 
-    const expected = { id: user.id, email: user.email, name: user.name };
+    const expected = { id: user.id, email: user.email, name: user.name, role: "user", status: "approved" };
     expect(await getSessionUser()).toEqual(expected);
     expect(await getCurrentUser()).toEqual(expected);
     expect(await verifySession()).toEqual(expected);

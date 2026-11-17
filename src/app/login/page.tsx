@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Starfield } from "@/components/starfield";
 import { getCurrentUser } from "@/lib/dal";
@@ -45,6 +46,13 @@ export default async function LoginPage() {
             <LoginForm />
           </div>
         </div>
+
+        <p className="mt-6 font-retro text-xl text-muted">
+          Ainda não tem conta?{" "}
+          <Link href="/cadastro" className="text-accent underline-offset-4 hover:underline">
+            Criar conta
+          </Link>
+        </p>
       </section>
     </main>
   );

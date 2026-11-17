@@ -1,5 +1,8 @@
-// Cria um usuário. Não existe tela de cadastro: contas só nascem aqui.
-// Uso local: npm run user:create
+// Cria um usuário já LIBERADO (ou um administrador, com --admin). Quem se cadastra pela
+// tela nasce "aguardando liberação"; este script serve para o administrador e para contas
+// criadas direto no servidor.
+// Uso local: npm run user:create            (conta comum)
+//            npm run user:create -- --admin (administrador: só vê o painel de acessos)
 // Uso em produção: docker compose -f docker-compose.prod.yml run --rm -it migrate node scripts/create-user.ts
 import readline from "node:readline";
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -38,6 +41,8 @@ const schema = z.object({
   password: z.string().min(12, "Use pelo menos 12 caracteres").max(128),
 });
 
+const isAdmin = process.argv.includes("--admin");
+
 async function main() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL não definida (crie o .env a partir do .env.example)");
@@ -62,8 +67,10 @@ async function main() {
       email: parsed.data.email,
       name: parsed.data.name ?? null,
       passwordHash: await hashPassword(parsed.data.password),
+      role: isAdmin ? "admin" : "user",
+      status: "approved",
     });
-    console.log(`Usuário criado: ${parsed.data.email}`);
+    console.log(`${isAdmin ? "Administrador" : "Usuário"} criado: ${parsed.data.email}`);
   } finally {
     await client.end();
   }

@@ -25,6 +25,17 @@ describe("proxy", () => {
     expect(res.headers.get("location")).toBeNull();
   });
 
+  it("deixa a tela de cadastro abrir sem cookie, mas protege /admin e /aguardando", () => {
+    const open = proxy(req("/cadastro"));
+    expect(open.status).toBe(200);
+    expect(open.headers.get("location")).toBeNull();
+    for (const path of ["/admin", "/aguardando"]) {
+      const res = proxy(req(path));
+      expect(res.status, path).toBe(307);
+      expect(new URL(res.headers.get("location")!).pathname, path).toBe("/login");
+    }
+  });
+
   it("deixa passar quem tem cookie de sessão", () => {
     const res = proxy(req("/", "session=qualquer-valor"));
     expect(res.status).toBe(200);

@@ -19,7 +19,8 @@ npm install
 cp .env.example .env        # depois troque POSTGRES_PASSWORD (e a mesma senha na DATABASE_URL)
 docker compose up -d db     # Postgres em 127.0.0.1:5435
 npm run db:migrate          # cria as tabelas
-npm run user:create         # cria seu usuário (a senha é pedida no terminal, oculta)
+npm run user:create         # cria um usuário liberado (a senha é pedida no terminal, oculta)
+npm run user:create -- --admin   # cria o ADMINISTRADOR (só vê o painel de acessos)
 npm run dev                 # http://localhost:3000
 ```
 
@@ -70,7 +71,10 @@ Limite conhecido: não há teste de navegador. A interface continua sendo verifi
 ## Segurança (regras do projeto)
 
 - Senhas com argon2id; nunca em texto puro.
-- Não há tela de cadastro: contas só são criadas por `npm run user:create`.
+- Cadastro aberto, mas a conta nasce **aguardando liberação** e não acessa nada até o administrador
+  liberar (checado no servidor em `verifySession`, não só na tela). Limite de 5 cadastros por hora
+  por IP e teto de 50 contas aguardando. O administrador só é criado por `npm run user:create -- --admin`
+  e só vê o painel de acessos. Ver `docs/decisoes/0003-cadastro-com-liberacao.md`.
 - Sessão por cookie `HttpOnly` + `SameSite=Lax` (`Secure` e prefixo `__Host-` em produção);
   o banco guarda só o SHA-256 do token.
 - A checagem de sessão vive na camada de acesso a dados (`src/lib/dal.ts`), não só no proxy.

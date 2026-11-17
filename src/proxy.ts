@@ -8,7 +8,8 @@ import { SESSION_COOKIE } from "@/lib/session-cookie";
 export function proxy(request: NextRequest) {
   const hasSessionCookie = request.cookies.has(SESSION_COOKIE);
 
-  if (!hasSessionCookie && request.nextUrl.pathname !== "/login") {
+  const { pathname } = request.nextUrl;
+  if (!hasSessionCookie && pathname !== "/login" && pathname !== "/cadastro") {
     return NextResponse.redirect(new URL("/login", request.url));
   }
   return NextResponse.next();

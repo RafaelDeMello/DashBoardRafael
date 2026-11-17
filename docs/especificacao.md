@@ -97,8 +97,9 @@ o conteúdo é livre.
 
 ## Fases
 
-1. **Fase 1:** só o Rafael. Conta criada por comando no servidor, sem tela de cadastro.
-2. **Fase 2:** painel para convidar/aprovar outras pessoas (esposa e demais).
+1. **Fase 1:** só o Rafael. Conta criada por comando no servidor.
+2. **Fase 2 (feita):** cadastro aberto com liberação: quem cria conta fica "aguardando liberação" e o
+   administrador libera ou bloqueia em `/admin` (decisão 0003). O compartilhamento de listas ainda não existe.
 3. **Fase 3 (futura):** agenda com eventos esporádicos ligada à lista.
 
 ## Pronto quando

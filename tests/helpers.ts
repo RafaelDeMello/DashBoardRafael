@@ -10,13 +10,17 @@ assertTestDatabase(process.env.DATABASE_URL);
 const created: string[] = [];
 
 /** Cria um usuário só para o teste (e-mail único). O hash é falso: aqui não se faz login. */
-export async function createTestUser(label = "u"): Promise<string> {
+export type AccountOpts = { role?: "user" | "admin"; status?: "pending" | "approved" | "blocked" };
+
+export async function createTestUser(label = "u", opts: AccountOpts = {}): Promise<string> {
   const [row] = await db
     .insert(users)
     .values({
       email: `${label}-${randomUUID()}@teste.local`,
       name: label,
       passwordHash: "hash-falso-de-teste",
+      role: opts.role ?? "user",
+      status: opts.status ?? "approved",
     })
     .returning({ id: users.id });
   created.push(row.id);
@@ -27,12 +31,16 @@ export async function createTestUser(label = "u"): Promise<string> {
 export async function createLoginUser(
   password: string,
   label = "login",
+  opts: AccountOpts = {},
 ): Promise<{ id: string; email: string; name: string }> {
   const { hashPassword } = await import("@/lib/password");
   const email = `${label}-${randomUUID()}@teste.local`;
   const [row] = await db
     .insert(users)
-    .values({ email, name: label, passwordHash: await hashPassword(password) })
+    .values({ email, name: label, passwordHash: await hashPassword(password),
+      role: opts.role ?? "user",
+      status: opts.status ?? "approved",
+    })
     .returning({ id: users.id });
   created.push(row.id);
   return { id: row.id, email, name: label };

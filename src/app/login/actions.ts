@@ -1,11 +1,11 @@
 "use server";
 
 import { eq } from "drizzle-orm";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
 import { users } from "@/db/schema";
+import { getClientIp } from "@/lib/client-ip";
 import { dummyHash, verifyPassword } from "@/lib/password";
 import { clearFailures, isBlocked, registerFailure } from "@/lib/rate-limit";
 import { createSession, destroySession } from "@/lib/session";
@@ -35,9 +35,7 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
   if (!parsed.success) return { error: GENERIC_ERROR, email: rawEmail };
   const { email, password } = parsed.data;
 
-  // x-forwarded-for só é confiável atrás de um proxy reverso nosso (na VPS, o Nginx/Caddy).
-  const forwarded = (await headers()).get("x-forwarded-for");
-  const ip = forwarded?.split(",")[0]?.trim() || "local";
+  const ip = await getClientIp();
   const emailKey = `email:${email}`;
   const ipKey = `ip:${ip}`;
 

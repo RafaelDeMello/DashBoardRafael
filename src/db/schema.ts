@@ -15,12 +15,20 @@ import {
 
 // ---------- Usuários e sessões ----------
 
+// Papel: "user" usa o app; "admin" só vê o painel de acessos (criado por script, nunca pela tela).
+export const userRole = pgEnum("user_role", ["user", "admin"]);
+// Status: quem cria conta pela tela nasce "pending" e só usa o app depois de "approved".
+export const userStatus = pgEnum("user_status", ["pending", "approved", "blocked"]);
+
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   // sempre salvo em minúsculas (normalizado antes de gravar)
   email: text("email").notNull().unique(),
   name: text("name"),
   passwordHash: text("password_hash").notNull(),
+  role: userRole("role").notNull().default("user"),
+  // Padrão "pending": se algum código esquecer de definir, falha FECHADO (sem acesso)
+  status: userStatus("status").notNull().default("pending"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

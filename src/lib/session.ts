@@ -29,7 +29,13 @@ export async function createSession(userId: string) {
   });
 }
 
-export type SessionUser = { id: string; email: string; name: string | null };
+export type SessionUser = {
+  id: string;
+  email: string;
+  name: string | null;
+  role: "user" | "admin";
+  status: "pending" | "approved" | "blocked";
+};
 
 /** Lê o cookie e devolve o usuário logado, ou null. */
 export async function getSessionUser(): Promise<SessionUser | null> {
@@ -43,6 +49,8 @@ export async function getSessionUser(): Promise<SessionUser | null> {
       id: users.id,
       email: users.email,
       name: users.name,
+      role: users.role,
+      status: users.status,
     })
     .from(sessions)
     .innerJoin(users, eq(users.id, sessions.userId))
@@ -66,7 +74,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
       .where(eq(sessions.id, row.sessionId));
   }
 
-  return { id: row.id, email: row.email, name: row.name };
+  return { id: row.id, email: row.email, name: row.name, role: row.role, status: row.status };
 }
 
 export async function destroySession() {
