@@ -11,7 +11,7 @@ branca, onde se lê e marca a lista, é limpa e amigável.
 ## Layout da tela do dia
 
 - **Menu à esquerda** (recolhido por padrão): só ícones. Módulos, nesta ordem:
-  **Tasks, Modelos, Configurações** (Modelos tem lista à esquerda e editor ao lado (mockup A); Configurações tem perfil, troca de senha e aparelhos).
+  **Tasks, Modelos, Configurações** (Modelos tem lista à esquerda e editor ao lado; Configurações tem perfil, senha e aparelhos. Configurações, Modelos e Acessos usam "janelas" (`components/win.tsx`): faixa clara com título preto, moldura azul-petróleo e sombra dura).
   Não há abas Dia/Semana/Mês.
 - **Folha branca** no centro. No topo, **uma barra contínua que ocupa toda a largura da
   folha**, com **cinco cards do mesmo tamanho** (cada um com 1/5 da largura), encostados

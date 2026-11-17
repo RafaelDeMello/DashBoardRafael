@@ -7,14 +7,7 @@ import {
   renameTemplate,
   useTemplateOnDayAction,
 } from "@/app/actions";
-
-const inputClass =
-  "w-full rounded-md border border-[#dcdad5] bg-white px-2.5 py-1.5 text-sm text-[#37352f] outline-none transition " +
-  "placeholder:text-[#b4b2ad] focus:border-[#2f6a96] focus:ring-2 focus:ring-[#2f6a96]/20 max-md:text-base";
-const primary =
-  "rounded-md bg-[#2f6a96] px-3 py-1.5 text-xs text-white transition-colors hover:bg-[#285a80] disabled:opacity-60";
-const ghost =
-  "rounded-md border border-[#dcdbd8] bg-white px-3 py-1.5 text-xs text-[#37352f] transition-colors hover:bg-[#f1f1ef] disabled:opacity-60";
+import { btnGhost, btnPrimary, winInput } from "@/components/win";
 
 /** "+ Novo modelo": pede o nome e cria um modelo vazio. */
 export function NewTemplateForm() {
@@ -23,7 +16,7 @@ export function NewTemplateForm() {
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className={ghost}>
+      <button type="button" onClick={() => setOpen(true)} className={btnGhost}>
         + Novo modelo
       </button>
     );
@@ -37,14 +30,14 @@ export function NewTemplateForm() {
         maxLength={100}
         placeholder="Nome do modelo"
         aria-label="Nome do modelo"
-        className={inputClass}
+        className={winInput}
       />
       {state?.error && <p role="alert" className="text-xs text-[#c4554d]">{state.error}</p>}
       <div className="flex gap-2">
-        <button type="submit" disabled={pending} className={primary}>
+        <button type="submit" disabled={pending} className={btnPrimary}>
           Criar
         </button>
-        <button type="button" onClick={() => setOpen(false)} className={ghost}>
+        <button type="button" onClick={() => setOpen(false)} className={btnGhost}>
           Cancelar
         </button>
       </div>
@@ -52,8 +45,41 @@ export function NewTemplateForm() {
   );
 }
 
-/** Nome do modelo (clique para renomear) e ações: duplicar, usar em um dia e apagar. */
-export function TemplateHeader({
+/** Nome do modelo, na barra de título da janela (clique para renomear). */
+export function TemplateTitle({ id, name }: { id: string; name: string }) {
+  const [renaming, setRenaming] = useState(false);
+
+  const save = (value: string) => {
+    setRenaming(false);
+    const next = value.trim();
+    if (next && next !== name) void renameTemplate({ templateId: id, name: next });
+  };
+
+  if (renaming) {
+    return (
+      <input
+        autoFocus
+        defaultValue={name}
+        maxLength={100}
+        aria-label="Nome do modelo"
+        onBlur={(e) => save(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") save(e.currentTarget.value);
+          if (e.key === "Escape") setRenaming(false);
+        }}
+        className="w-48 max-w-full border border-[#2f6a96] bg-white px-1 font-retro text-[17px] uppercase tracking-[0.12em] text-[#1a1a18] outline-none"
+      />
+    );
+  }
+  return (
+    <button type="button" onClick={() => setRenaming(true)} title="Renomear modelo" className="max-w-full truncate uppercase">
+      {name}
+    </button>
+  );
+}
+
+/** Quantos dias usaram o modelo + ações: duplicar e usar em um dia. */
+export function TemplateActions({
   id,
   name,
   usedDays,
@@ -64,74 +90,38 @@ export function TemplateHeader({
   usedDays: number;
   today: string;
 }) {
-  const [renaming, setRenaming] = useState(false);
   const [picking, setPicking] = useState(false);
   const [useState_, useAction, usePending] = useActionState(useTemplateOnDayAction, undefined);
   const [dupState, dupAction, dupPending] = useActionState(createTemplateAction, undefined);
 
-  const saveName = (value: string) => {
-    setRenaming(false);
-    const next = value.trim();
-    if (next && next !== name) void renameTemplate({ templateId: id, name: next });
-  };
-
   return (
-    <div className="mb-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          {renaming ? (
-            <input
-              autoFocus
-              defaultValue={name}
-              maxLength={100}
-              aria-label="Nome do modelo"
-              onBlur={(e) => saveName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") saveName(e.currentTarget.value);
-                if (e.key === "Escape") setRenaming(false);
-              }}
-              className="w-full rounded border border-[#2f6a96] px-1.5 text-[22px] font-medium outline-none"
-            />
-          ) : (
-            <button
-              type="button"
-              onClick={() => setRenaming(true)}
-              title="Renomear modelo"
-              className="max-w-full truncate text-left text-[22px] font-medium leading-tight text-[#2f2f2c]"
-            >
-              {name}
-            </button>
-          )}
-          <p className="mt-0.5 text-xs text-[#9b9a97]">
-            {usedDays === 0 ? "Ainda não foi usado" : `Usado em ${usedDays} ${usedDays === 1 ? "dia" : "dias"}`}
-          </p>
-        </div>
-
+    <div className="mb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-xs text-[#9b9a97]">
+          {usedDays === 0 ? "Ainda não foi usado" : `Usado em ${usedDays} ${usedDays === 1 ? "dia" : "dias"}`}
+        </p>
         <div className="flex flex-wrap items-center gap-2">
           <form action={dupAction}>
             <input type="hidden" name="name" value={`Cópia de ${name}`.slice(0, 100)} />
             <input type="hidden" name="copyFrom" value={id} />
-            <button type="submit" disabled={dupPending} className={ghost}>
+            <button type="submit" disabled={dupPending} className={btnGhost}>
               Duplicar
             </button>
           </form>
-          <button type="button" onClick={() => setPicking((v) => !v)} className={primary} aria-expanded={picking}>
+          <button type="button" onClick={() => setPicking((v) => !v)} className={btnPrimary} aria-expanded={picking}>
             Usar em um dia
           </button>
         </div>
       </div>
 
       {picking && (
-        <form
-          action={useAction}
-          className="mt-3 flex flex-wrap items-center gap-2 rounded-lg bg-[#f7f7f5] p-3"
-        >
+        <form action={useAction} className="mt-3 flex flex-wrap items-center gap-2 border border-[#cfd8e3] bg-[#f4f7fa] p-3">
           <input type="hidden" name="templateId" value={id} />
-          <label className="flex items-center gap-2 text-xs text-[#787774]">
+          <label className="flex items-center gap-2 font-retro text-[15px] uppercase tracking-[0.12em] text-[#787774]">
             Data
-            <input type="date" name="date" defaultValue={today} required className={`${inputClass} !w-auto`} />
+            <input type="date" name="date" defaultValue={today} required className={`${winInput} !w-auto`} />
           </label>
-          <button type="submit" disabled={usePending} className={primary}>
+          <button type="submit" disabled={usePending} className={btnPrimary}>
             Criar o dia
           </button>
           {useState_?.error && (

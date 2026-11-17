@@ -431,7 +431,7 @@ function SectionBlock({
             onClick={() => setRenaming(true)}
             aria-label={`Renomear seção: ${section.title}`}
             title="Renomear seção"
-            className="min-w-0 flex-1 truncate text-left text-[15px] font-medium"
+            className={`min-w-0 flex-1 truncate text-left ${template ? "font-retro text-[17px] uppercase tracking-[0.14em] text-[#2f6a96]" : "text-[15px] font-medium"}`}
           >
             {section.title}
           </button>
