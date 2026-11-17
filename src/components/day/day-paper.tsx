@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Sun } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sun, Undo2 } from "lucide-react";
 import { createDayAction } from "@/app/actions";
 import { addDays, dayOfMonth, formatTitle, formatWeekday } from "@/lib/date";
 import type { DayData } from "@/lib/days";
@@ -74,7 +74,7 @@ export function DayPaper({
       {/* Cinco colunas exatamente iguais (minmax(0,1fr)): todos os cards têm o mesmo tamanho,
           e o trio de dias (2º, 3º e 4º) fica no centro. Encostados, sem espaço entre eles.
           (Sem overflow-hidden: o seletor de data abre para fora da barra.) */}
-      <div className="mb-4">
+      <div>
         <div className={`grid w-full grid-cols-5 rounded-xl border ${LINE}`}>
           <div className={`${SEG} min-w-0 gap-2.5 rounded-l-[11px] px-2`}>
             <Sun size={22} className="flex-none text-[#2f6a96]" />
@@ -117,6 +117,20 @@ export function DayPaper({
             className="min-w-0"
             tileClassName={`${SEG} w-full rounded-r-[11px] border-l ${LINE}`}
           />
+        </div>
+
+        {/* Atalho discreto: só aparece fora de hoje. A altura é sempre reservada (h-5)
+            para a lista não "pular" quando ele aparece ou some. */}
+        <div className="mb-1 mt-1 flex h-5 items-center justify-center">
+          {date !== today && (
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1 rounded px-1.5 text-[11px] text-[#8aa6bb] transition-colors hover:text-[#2f6a96]"
+            >
+              <Undo2 size={11} aria-hidden />
+              Voltar para hoje
+            </Link>
+          )}
         </div>
       </div>
 

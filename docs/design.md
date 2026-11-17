@@ -22,6 +22,10 @@ branca, onde se lê e marca a lista, é limpa e amigável.
   3. `14` (dia atual, preenchido de azul-petróleo);
   4. `15 ›` (próximo dia, clicável);
   5. calendário, que abre um seletor de data com o atalho "Voltar para hoje".
+- **"Voltar para hoje"** (atalho discreto): texto de 11px, sem borda nem fundo, em azul
+  apagado, **centralizado logo abaixo da barra**, com um pequeno ícone de retorno. Só aparece
+  quando o dia visto não é hoje (inclusive em dias ainda sem lista) e leva para `/`.
+  A altura dele é sempre reservada (20px), para a lista não "pular" quando ele aparece.
   Abaixo, as seções recolhíveis (Manhã, Tarde, Noite) com itens marcáveis.
 - **Cartão `RESUMO.SYS` à direita** (só com o menu recolhido): progresso em %, barra em
   blocos, progresso por seção, dias seguidos.
