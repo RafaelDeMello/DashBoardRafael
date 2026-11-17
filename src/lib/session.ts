@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
-import { eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { sessions, users } from "@/db/schema";
 
@@ -74,4 +74,23 @@ export async function destroySession() {
   const token = jar.get(SESSION_COOKIE)?.value;
   if (token) await db.delete(sessions).where(eq(sessions.id, sha256(token)));
   jar.delete(SESSION_COOKIE);
+}
+
+/** Id (hash do token) da sessão DESTE aparelho, ou null. */
+export async function getCurrentSessionId(): Promise<string | null> {
+  const token = (await cookies()).get(SESSION_COOKIE)?.value;
+  return token ? sha256(token) : null;
+}
+
+/** Encerra as sessões de TODOS os aparelhos do usuário, inclusive este (apaga o cookie). */
+export async function destroyAllSessions(userId: string) {
+  await db.delete(sessions).where(eq(sessions.userId, userId));
+  (await cookies()).delete(SESSION_COOKIE);
+}
+
+/** Encerra as sessões dos OUTROS aparelhos do usuário e mantém a deste. */
+export async function destroyOtherSessions(userId: string) {
+  const current = await getCurrentSessionId();
+  if (!current) return;
+  await db.delete(sessions).where(and(eq(sessions.userId, userId), ne(sessions.id, current)));
 }

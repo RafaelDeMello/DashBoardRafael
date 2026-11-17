@@ -11,7 +11,7 @@ branca, onde se lê e marca a lista, é limpa e amigável.
 ## Layout da tela do dia
 
 - **Menu à esquerda** (recolhido por padrão): só ícones. Módulos, nesta ordem:
-  **Tasks, Modelos, Configurações** (Modelos e Configurações abrem uma página "em breve").
+  **Tasks, Modelos, Configurações** (Modelos abre uma página "em breve"; Configurações tem perfil, troca de senha e aparelhos).
   Não há abas Dia/Semana/Mês.
 - **Folha branca** no centro. No topo, **uma barra contínua que ocupa toda a largura da
   folha**, com **cinco cards do mesmo tamanho** (cada um com 1/5 da largura), encostados

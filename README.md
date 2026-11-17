@@ -74,6 +74,8 @@ Limite conhecido: não há teste de navegador. A interface continua sendo verifi
 - Sessão por cookie `HttpOnly` + `SameSite=Lax` (`Secure` e prefixo `__Host-` em produção);
   o banco guarda só o SHA-256 do token.
 - A checagem de sessão vive na camada de acesso a dados (`src/lib/dal.ts`), não só no proxy.
+- Troca de senha exige a senha atual (máx. 5 erros por 15 min), encerra todas as sessões antigas e
+  cria uma nova neste aparelho. Em Configurações dá para sair dos outros aparelhos ou de todos.
 - `.env` nunca vai para o git.
 
 ## Documentação
