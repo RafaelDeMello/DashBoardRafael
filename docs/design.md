@@ -13,10 +13,10 @@ branca, onde se lê e marca a lista, é limpa e amigável.
 - **Menu à esquerda** (recolhido por padrão): só ícones. Módulos, nesta ordem:
   **Tasks, Modelos, Configurações** (Modelos e Configurações abrem uma página "em breve").
   Não há abas Dia/Semana/Mês.
-- **Folha branca** no centro. No topo, **uma barra contínua e compacta, centralizada**, com
-  **cinco cards encostados** (sem espaço, separados só por um traço fino), cada um com uma
-  informação. As duas pontas têm o mesmo tamanho (124px), então o trio de dias fica
-  exatamente no centro:
+- **Folha branca** no centro. No topo, **uma barra contínua que ocupa toda a largura da
+  folha**, com **cinco cards do mesmo tamanho** (cada um com 1/5 da largura), encostados
+  (sem espaço, separados só por um traço fino), cada um com uma informação e o conteúdo
+  centralizado. O trio de dias (2º, 3º e 4º) fica no centro:
   1. sol + dia da semana ("Sábado"); no celular, só o ícone;
   2. `‹ 13` (dia anterior, clicável);
   3. `14` (dia atual, preenchido de azul-petróleo);

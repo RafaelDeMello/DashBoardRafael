@@ -9,10 +9,12 @@ export function DayPicker({
   date,
   today,
   tileClassName,
+  className = "",
 }: {
   date: string;
   today: string;
   tileClassName: string;
+  className?: string;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -38,7 +40,7 @@ export function DayPicker({
   };
 
   return (
-    <div ref={boxRef} className="relative">
+    <div ref={boxRef} className={`relative ${className}`}>
       <button
         type="button"
         aria-haspopup="dialog"

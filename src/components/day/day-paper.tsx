@@ -13,9 +13,6 @@ const dm = (iso: string) => `${iso.slice(8)}/${iso.slice(5, 7)}`;
 // Os cards ficam encostados, separados só por um traço fino (border-l).
 const LINE = "border-[#e3e2df]";
 const SEG = "flex h-[58px] items-center justify-center transition-colors";
-// Largura dos três dias e das pontas (iguais nas duas pontas: o trio fica no centro)
-const DAY_W = "w-[60px] sm:w-[84px]";
-const END_W = "w-[56px] sm:w-[124px]";
 
 function CreateButton({
   date,
@@ -74,9 +71,12 @@ export function DayPaper({
       {/* [sol + dia da semana] [‹ ontem] [HOJE] [amanhã ›] [calendário]: cinco cards colados,
           com as duas pontas do mesmo tamanho para o trio de dias ficar no centro.
           (Sem overflow-hidden: o seletor de data abre para fora da barra.) */}
-      <div className="mb-4 flex justify-center">
-        <div className={`flex rounded-xl border ${LINE}`}>
-          <div className={`${SEG} ${END_W} gap-2 rounded-l-[11px]`}>
+      {/* Cinco colunas exatamente iguais (minmax(0,1fr)): todos os cards têm o mesmo tamanho,
+          e o trio de dias (2º, 3º e 4º) fica no centro. Encostados, sem espaço entre eles.
+          (Sem overflow-hidden: o seletor de data abre para fora da barra.) */}
+      <div className="mb-4">
+        <div className={`grid w-full grid-cols-5 rounded-xl border ${LINE}`}>
+          <div className={`${SEG} min-w-0 gap-2.5 rounded-l-[11px] px-2`}>
             <Sun size={22} className="flex-none text-[#2f6a96]" />
             <h1 className="hidden truncate text-[17px] font-medium text-[#2f2f2c] sm:block">
               {formatWeekday(date)}
@@ -89,7 +89,7 @@ export function DayPaper({
           <Link
             href={`/?d=${addDays(date, -1)}`}
             aria-label={`Dia anterior, ${dayOfMonth(addDays(date, -1))}`}
-            className={`${SEG} ${DAY_W} gap-0.5 border-l ${LINE} text-[18px] text-[#787774] hover:bg-[#f7f7f5] sm:text-[22px]`}
+            className={`${SEG} min-w-0 gap-0.5 border-l ${LINE} text-[18px] text-[#787774] hover:bg-[#f7f7f5] sm:text-[22px]`}
           >
             <ChevronLeft size={16} className="hidden sm:block" />
             {dayOfMonth(addDays(date, -1))}
@@ -97,7 +97,7 @@ export function DayPaper({
 
           <div
             aria-current="date"
-            className={`${SEG} ${DAY_W} border-l border-[#2f6a96] bg-[#2f6a96] text-[24px] font-medium text-white sm:text-[28px]`}
+            className={`${SEG} min-w-0 border-l border-[#2f6a96] bg-[#2f6a96] text-[24px] font-medium text-white sm:text-[28px]`}
           >
             {dayOfMonth(date)}
           </div>
@@ -105,7 +105,7 @@ export function DayPaper({
           <Link
             href={`/?d=${addDays(date, 1)}`}
             aria-label={`Próximo dia, ${dayOfMonth(addDays(date, 1))}`}
-            className={`${SEG} ${DAY_W} gap-0.5 border-l ${LINE} text-[18px] text-[#787774] hover:bg-[#f7f7f5] sm:text-[22px]`}
+            className={`${SEG} min-w-0 gap-0.5 border-l ${LINE} text-[18px] text-[#787774] hover:bg-[#f7f7f5] sm:text-[22px]`}
           >
             {dayOfMonth(addDays(date, 1))}
             <ChevronRight size={16} className="hidden sm:block" />
@@ -114,7 +114,8 @@ export function DayPaper({
           <DayPicker
             date={date}
             today={today}
-            tileClassName={`${SEG} ${END_W} rounded-r-[11px] border-l ${LINE}`}
+            className="min-w-0"
+            tileClassName={`${SEG} w-full rounded-r-[11px] border-l ${LINE}`}
           />
         </div>
       </div>
