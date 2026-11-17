@@ -26,18 +26,18 @@
 /* Tamanho dos quadradinhos do calendário: cresce com a tela
    (em monitor grande, 7px vira um pontinho). */
 :root {
-  --cal-cell: 10px;
-  --cal-gap: 2px;
+  --cal-cell: 12px;
+  --cal-gap: 3px;
 }
 @media (min-width: 1536px) {
   :root {
-    --cal-cell: 12px;
+    --cal-cell: 14px;
   }
 }
 @media (min-width: 1920px) {
   :root {
-    --cal-cell: 14px;
-    --cal-gap: 3px;
+    --cal-cell: 16px;
+    --cal-gap: 4px;
   }
 }
 

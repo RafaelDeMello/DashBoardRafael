@@ -18,7 +18,7 @@ export function MonthCalendar({
   return (
     // w-fit: o bloco tem a largura do título; grade e legenda ficam centralizadas sob ele
     <div className="flex w-fit flex-col items-center">
-      <div className="mb-1.5 text-center font-retro text-[15px] tracking-[0.1em] text-[#6f778a] min-[1536px]:text-[17px]">
+      <div className="mb-1.5 text-center font-retro text-[16px] tracking-[0.1em] text-[#6f778a] min-[1536px]:text-[19px]">
         {label}
       </div>
 
@@ -50,7 +50,7 @@ export function MonthCalendar({
         })}
       </div>
 
-      <div className="mt-1.5 flex items-center justify-center gap-[3px] text-[10px] text-[#6f778a] min-[1536px]:text-[11px]">
+      <div className="mt-1.5 flex items-center justify-center gap-[3px] text-[11px] text-[#6f778a] min-[1536px]:text-[12px]">
         menos
         {COLORS.map((color, i) => (
           <i

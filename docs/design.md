@@ -44,8 +44,9 @@ branca, onde se lê e marca a lista, é limpa e amigável.
 ### Calendário do menu
 
 - Grade do mês, 7 colunas, centralizada sob o título e a legenda. Os quadradinhos
-  **crescem com a tela** (variável CSS `--cal-cell`): 10px até 1535px de largura,
-  12px a partir de 1536px, 14px a partir de 1920px (7px ficava pequeno em monitor grande).
+  **crescem com a tela** (variável CSS `--cal-cell`): 12px até 1535px de largura,
+  14px a partir de 1536px, 16px a partir de 1920px (tamanhos menores ficavam pequenos
+  em monitor grande). O espaço entre eles é 3px (4px a partir de 1920px).
 - Cores no estilo contribuições do GitHub (verde mais vivo = mais tarefas feitas):
   `transparente`, `#0e4429`, `#006d32`, `#26a641`, `#39d353`.
 - Nível pela **porcentagem do dia**: 0% (vazio/futuro), 1-25%, 26-50%, 51-75%, 76%+.
