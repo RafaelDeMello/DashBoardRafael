@@ -89,3 +89,4 @@ Limite conhecido: não há teste de navegador. A interface continua sendo verifi
 - [Especificação do MVP](docs/especificacao.md)
 - [Glossário](docs/glossario.md)
 - [Decisões técnicas](docs/decisoes/)
+- [O que falta fazer](docs/pendencias.md)
