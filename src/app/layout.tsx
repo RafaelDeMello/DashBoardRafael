@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Press_Start_2P, VT323 } from "next/font/google";
 import "./globals.css";
 
@@ -29,6 +29,14 @@ const pixel = Press_Start_2P({
 export const metadata: Metadata = {
   title: "Only-Tasks",
   description: "Organizador de rotinas diárias",
+  applicationName: "Only-Tasks",
+  // iPhone/iPad: ao adicionar à tela inicial, abre sem a barra do Safari
+  appleWebApp: { capable: true, title: "Only-Tasks", statusBarStyle: "black-translucent" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0a0a0f", // cor da barra do navegador/sistema no celular
+  viewportFit: "cover", // usa a tela toda (a folha respeita as áreas seguras do notch)
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

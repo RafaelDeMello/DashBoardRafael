@@ -7,7 +7,7 @@ const labelClass = "font-retro text-xl uppercase tracking-[0.2em] text-neon";
 
 // Caixas quadradas em cinza escuro; ao focar, borda ciano e sombra "dura" (sem desfoque)
 const inputClass =
-  "w-full rounded-none border-2 border-steel bg-[#0b0d11] px-4 py-3 font-mono text-[0.95rem] text-white " +
+  "w-full rounded-none border-2 border-steel bg-[#0b0d11] px-4 py-3 font-mono text-[0.95rem] text-white max-md:text-base " +
   "placeholder:text-white/30 outline-none transition " +
   "focus:border-neon focus:shadow-[4px_4px_0_rgba(25,230,255,0.45)]";
 

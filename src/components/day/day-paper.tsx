@@ -62,7 +62,7 @@ export function DayPaper({
   initialPermanent: boolean;
 }) {
   return (
-    <article className="min-w-0 flex-1 overflow-y-auto rounded-t-lg bg-white px-5 py-6 text-[#37352f] md:px-[30px]">
+    <article className="min-w-0 flex-1 overflow-y-auto rounded-t-lg bg-white px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6 text-[#37352f] md:px-[30px]">
       <div className="mb-3 flex items-center justify-between text-xs text-[#9b9a97]">
         <span>Only-Tasks</span>
         {day && <DayMenu key={date} date={date} />}

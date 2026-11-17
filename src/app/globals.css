@@ -63,6 +63,17 @@
   --font-pixel: var(--font-pixel);
 }
 
+/* Toque sem atraso de 300ms nem zoom por toque duplo em botões, links e campos */
+button,
+a,
+input,
+select,
+textarea,
+label,
+summary {
+  touch-action: manipulation;
+}
+
 body {
   background: var(--bg);
   color: var(--ink);

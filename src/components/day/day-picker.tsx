@@ -78,7 +78,7 @@ export function DayPicker({
                 required
                 defaultValue={date}
                 autoFocus
-                className="min-w-0 flex-1 rounded border border-[#dcdbd8] px-2 py-1 text-sm outline-none focus:border-[#2f6a96]"
+                className="min-w-0 flex-1 rounded border border-[#dcdbd8] px-2 py-1 text-base outline-none focus:border-[#2f6a96] md:text-sm"
               />
               <button
                 type="submit"

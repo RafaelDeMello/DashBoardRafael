@@ -170,7 +170,7 @@ function AddInput({ placeholder, onAdd }: { placeholder: string; onAdd: (title: 
         autoComplete="off"
         placeholder={placeholder}
         aria-label={placeholder}
-        className="w-full bg-transparent text-sm text-[#37352f] outline-none placeholder:text-[#b8b7b4] focus:placeholder:text-[#9b9a97]"
+        className="w-full bg-transparent text-base text-[#37352f] md:text-sm outline-none placeholder:text-[#b8b7b4] focus:placeholder:text-[#9b9a97]"
       />
     </form>
   );
@@ -202,7 +202,7 @@ function ItemEditor({
         onChange={(e) => setTitle(e.target.value)}
         maxLength={200}
         aria-label="Título do item"
-        className="rounded border border-[#dcdbd8] bg-white px-2.5 py-1.5 text-sm outline-none focus:border-[#2f6a96]"
+        className="rounded border border-[#dcdbd8] bg-white px-2.5 py-1.5 text-base outline-none focus:border-[#2f6a96] md:text-sm"
       />
       <textarea
         value={description}
@@ -211,7 +211,7 @@ function ItemEditor({
         rows={3}
         placeholder="Descrição (opcional)"
         aria-label="Descrição do item"
-        className="resize-y rounded border border-[#dcdbd8] bg-white px-2.5 py-1.5 text-sm outline-none placeholder:text-[#b8b7b4] focus:border-[#2f6a96]"
+        className="resize-y rounded border border-[#dcdbd8] bg-white px-2.5 py-1.5 text-base outline-none placeholder:text-[#b8b7b4] focus:border-[#2f6a96] md:text-sm"
       />
       <div className="flex gap-2">
         <button
@@ -282,7 +282,7 @@ function ItemRow({
           onClick={onToggle}
           aria-pressed={item.done}
           aria-label={item.done ? `Desmarcar: ${item.title}` : `Marcar como feito: ${item.title}`}
-          className={`-ml-1.5 flex h-[18px] w-[18px] flex-none items-center justify-center rounded-[5px] border-[1.5px] transition-colors ${
+          className={`relative -ml-1.5 flex h-[18px] w-[18px] flex-none after:absolute after:-inset-3 after:content-[''] items-center justify-center rounded-[5px] border-[1.5px] transition-colors ${
             item.done
               ? "border-[#2f6a96] bg-[#2f6a96] text-white"
               : "border-[#9b9a97] hover:border-[#2f6a96]"
@@ -309,7 +309,7 @@ function ItemRow({
           disabled={pending}
           onClick={onRemove}
           aria-label={`Remover: ${item.title}`}
-          className="flex-none rounded p-0.5 text-[#b8b7b4] hover:bg-[#f1f1ef] hover:text-[#c0392b] md:opacity-0 md:focus-visible:opacity-100 md:group-hover/i:opacity-100"
+          className="relative flex-none rounded p-0.5 text-[#b8b7b4] after:absolute after:-inset-2.5 after:content-[''] hover:bg-[#f1f1ef] hover:text-[#c0392b] md:opacity-0 md:focus-visible:opacity-100 md:group-hover/i:opacity-100"
         >
           <X size={14} />
         </button>
@@ -412,7 +412,7 @@ function SectionBlock({
               if (e.key === "Enter") saveName(e.currentTarget.value);
               if (e.key === "Escape") setRenaming(false);
             }}
-            className="min-w-0 flex-1 rounded border border-[#2f6a96] px-1.5 text-[15px] font-medium outline-none"
+            className="min-w-0 flex-1 rounded border border-[#2f6a96] px-1.5 text-base font-medium outline-none md:text-[15px]"
           />
         ) : (
           <button
@@ -619,7 +619,7 @@ export function DayBoard({
         <div
           key={toast.key}
           role="status"
-          className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-lg bg-[#2f2f2c] px-4 py-2.5 text-sm text-white shadow-lg"
+          className="fixed bottom-[max(1.5rem,env(safe-area-inset-bottom))] left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-lg bg-[#2f2f2c] px-4 py-2.5 text-sm text-white shadow-lg"
         >
           <span className="max-w-[60vw] truncate">{toast.label}</span>
           <button

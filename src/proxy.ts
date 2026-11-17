@@ -14,6 +14,13 @@ export function proxy(request: NextRequest) {
   return NextResponse.next();
 }
 
+// Caminhos PÚBLICOS (o proxy nem roda neles): arquivos estáticos, o manifesto e os ícones
+// do PWA (o navegador os pede SEM login, senão instalar o app quebra) e o health check
+// do Docker. Todo o resto exige cookie de sessão.
+// O matcher precisa ser um valor literal (o Next o lê sem executar o arquivo);
+// tests/proxy.test.ts confere quais caminhos ele libera e quais protege.
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|webp|ico)$).*)"],
+  matcher: [
+    "/((?!(?:_next/static|_next/image|favicon\\.ico|manifest\\.webmanifest|pwa-icon|icon|apple-icon|api/health)(?:$|/)|.*\\.(?:svg|png|jpg|jpeg|webp|ico)$).*)",
+  ],
 };
