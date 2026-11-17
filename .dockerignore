@@ -1,0 +1,17 @@
+# Fora da imagem: dependências locais, artefatos de build, segredos e lixo
+node_modules
+.next
+.git
+.env
+.env.*
+!.env.example
+*.log
+tsconfig.tsbuildinfo
+next-env.d.ts
+
+# Documentação e backups não precisam estar na imagem.
+# (A pasta tests/ FICA: o "next build" verifica os tipos de todo o projeto, inclusive o
+# vitest.config.mts, que importa de tests/. Ela não chega à imagem final.)
+docs
+backups
+*.md

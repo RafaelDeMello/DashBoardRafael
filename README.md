@@ -26,6 +26,15 @@ npm run dev                 # http://localhost:3000
 A porta do banco (5435) foi escolhida porque 5432, 5433 e 5434 já estavam em uso.
 Para mudar, ajuste `DB_PORT` e `DATABASE_URL` no `.env`.
 
+## No celular (PWA) e publicação
+
+O app pode ser **instalado** na tela inicial do celular ou do computador (manifesto e ícones
+gerados por código, abre em tela cheia). Para usar no celular fora de casa, ele precisa estar
+publicado na internet com HTTPS.
+
+Publicação na VPS com Docker, HTTPS automático (Caddy) e backup diário do banco:
+veja **[docs/deploy.md](docs/deploy.md)**. A stack de produção está em `docker-compose.prod.yml`.
+
 ## Testes
 
 ```bash

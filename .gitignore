@@ -31,3 +31,7 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+!.env.production.example
+
+# Backups do banco (dados reais: nunca vão para o git)
+/backups

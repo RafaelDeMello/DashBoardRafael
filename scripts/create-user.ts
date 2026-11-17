@@ -1,11 +1,12 @@
 // Cria um usuário. Não existe tela de cadastro: contas só nascem aqui.
-// Uso: npm run user:create
+// Uso local: npm run user:create
+// Uso em produção: docker compose -f docker-compose.prod.yml run --rm -it migrate node scripts/create-user.ts
 import readline from "node:readline";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { z } from "zod";
-import { users } from "../src/db/schema";
-import { hashPassword } from "../src/lib/password";
+import { users } from "../src/db/schema.ts";
+import { hashPassword } from "../src/lib/password.ts";
 
 const rl = readline.createInterface({
   input: process.stdin,

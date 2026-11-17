@@ -1,0 +1,18 @@
+# Proxy reverso com HTTPS automático (Let's Encrypt).
+# SITE_ADDRESS vem do .env.production:
+#   meusite.com.br        -> HTTPS automático com certificado real (precisa de DNS apontando para a VPS)
+#   localhost             -> HTTPS com certificado local (testes)
+#   http://localhost      -> só HTTP (testes em que o certificado atrapalha)
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	header {
+		# O navegador só volta a este site por HTTPS (ignorado em http://)
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+
+	# O Caddy SOBRESCREVE X-Forwarded-For com o IP real de quem conectou, então o
+	# limite de tentativas de login (que lê esse cabeçalho) não pode ser enganado.
+	reverse_proxy app:3000
+}
