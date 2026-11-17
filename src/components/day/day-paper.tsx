@@ -11,8 +11,8 @@ const dm = (iso: string) => `${iso.slice(8)}/${iso.slice(5, 7)}`;
 
 // A faixa do topo é UMA barra contínua; cada segmento (card) tem uma informação.
 // Os cards ficam encostados, separados só por um traço fino (border-l).
-const LINE = "border-[#e3e2df]";
-const SEG = "flex h-[58px] items-center justify-center transition-colors";
+const LINE = "border-[#cfd8e3]";
+const SEG = "flex h-[46px] items-center justify-center font-retro transition-colors";
 
 function CreateButton({
   date,
@@ -66,7 +66,7 @@ export function DayPaper({
   initialPermanent: boolean;
 }) {
   return (
-    <article className="min-w-0 flex-1 overflow-y-auto rounded-t-lg bg-white px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6 text-[#37352f] md:px-[30px]">
+    <article className="min-w-0 flex-1 overflow-y-auto bg-white px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6 text-[#37352f] md:px-[30px]">
       <div className="mb-3 flex items-center justify-between text-xs text-[#9b9a97]">
         <span>Only-Tasks</span>
         {day && <DayMenu key={date} date={date} />}
@@ -79,10 +79,24 @@ export function DayPaper({
           e o trio de dias (2º, 3º e 4º) fica no centro. Encostados, sem espaço entre eles.
           (Sem overflow-hidden: o seletor de data abre para fora da barra.) */}
       <div>
-        <div className={`grid w-full grid-cols-5 rounded-xl border ${LINE}`}>
-          <div className={`${SEG} min-w-0 gap-2.5 rounded-l-[11px] px-2`}>
-            <Sun size={22} className="flex-none text-[#2f6a96]" />
-            <h1 className="hidden truncate text-[17px] font-medium text-[#2f2f2c] sm:block">
+        {/* Janela de sistema antigo (a mesma do login): barra de título + os cinco cards */}
+        <div className="border-2 border-[#2f6a96]">
+          <div
+            aria-hidden
+            className="flex h-[22px] items-center justify-between bg-[#16283d] px-2.5 font-retro text-[17px] uppercase tracking-[0.2em] text-[#19e6ff]"
+          >
+            <span>DIA.SYS</span>
+            <span className="flex gap-[3px]">
+              <span className="h-2 w-2 bg-[#19e6ff]" />
+              <span className="h-2 w-2 bg-white" />
+              <span className="h-2 w-2 bg-[#3a4150]" />
+            </span>
+          </div>
+          <div className="grid w-full grid-cols-5">
+          <div className={`${SEG} min-w-0 gap-2.5 px-1.5`}>
+            {/* Em telas médias com o menu aberto o card é estreito: o ícone cede lugar ao nome do dia */}
+            <Sun size={22} className="block flex-none text-[#2f6a96] sm:hidden lg:block" />
+            <h1 className="hidden truncate text-[20px] uppercase tracking-[0.1em] text-[#16283d] sm:block">
               {formatWeekday(date)}
               <span className="sr-only">, {formatTitle(date).split(", ")[1]}</span>
             </h1>
@@ -93,7 +107,7 @@ export function DayPaper({
           <Link
             href={`/?d=${addDays(date, -1)}`}
             aria-label={`Dia anterior, ${dayOfMonth(addDays(date, -1))}`}
-            className={`${SEG} min-w-0 gap-0.5 border-l ${LINE} text-[18px] text-[#787774] hover:bg-[#f7f7f5] sm:text-[22px]`}
+            className={`${SEG} min-w-0 gap-0.5 border-l ${LINE} text-[22px] text-[#787774] hover:bg-[#f7f7f5] sm:text-[24px]`}
           >
             <ChevronLeft size={16} className="hidden sm:block" />
             {dayOfMonth(addDays(date, -1))}
@@ -101,7 +115,7 @@ export function DayPaper({
 
           <div
             aria-current="date"
-            className={`${SEG} min-w-0 border-l border-[#2f6a96] bg-[#2f6a96] text-[24px] font-medium text-white sm:text-[28px]`}
+            className={`${SEG} min-w-0 border-l border-[#2f6a96] bg-[#2f6a96] text-[30px] text-white sm:text-[32px]`}
           >
             {dayOfMonth(date)}
           </div>
@@ -109,7 +123,7 @@ export function DayPaper({
           <Link
             href={`/?d=${addDays(date, 1)}`}
             aria-label={`Próximo dia, ${dayOfMonth(addDays(date, 1))}`}
-            className={`${SEG} min-w-0 gap-0.5 border-l ${LINE} text-[18px] text-[#787774] hover:bg-[#f7f7f5] sm:text-[22px]`}
+            className={`${SEG} min-w-0 gap-0.5 border-l ${LINE} text-[22px] text-[#787774] hover:bg-[#f7f7f5] sm:text-[24px]`}
           >
             {dayOfMonth(addDays(date, 1))}
             <ChevronRight size={16} className="hidden sm:block" />
@@ -119,8 +133,9 @@ export function DayPaper({
             date={date}
             today={today}
             className="min-w-0"
-            tileClassName={`${SEG} w-full rounded-r-[11px] border-l ${LINE}`}
+            tileClassName={`${SEG} w-full border-l ${LINE}`}
           />
+          </div>
         </div>
 
         {/* Atalho discreto: só aparece fora de hoje. A altura é sempre reservada (h-5)

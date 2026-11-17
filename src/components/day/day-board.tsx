@@ -131,18 +131,18 @@ function ScopeToggle({ permanent, onChange }: { permanent: boolean; onChange: (v
       aria-label={label}
       title={hint}
       onClick={() => onChange(value)}
-      className={`rounded px-2.5 py-1 transition-colors ${
-        permanent === value ? "bg-[#2f6a96] text-white" : "text-[#787774] hover:bg-[#f1f1ef]"
+      className={`px-3 py-px font-retro text-[17px] uppercase leading-snug tracking-[0.1em] transition-colors ${
+        permanent === value ? "bg-[#16283d] text-[#19e6ff]" : "text-[#787774] hover:bg-[#f1f1ef]"
       }`}
     >
       {label}
     </button>
   );
   return (
-    <div className="mb-3 flex flex-wrap items-center justify-end gap-x-2 gap-y-1 text-xs text-[#787774]">
-      {permanent && <span>Mudanças também vão para o modelo dos próximos dias.</span>}
-      <span>Alterações valem</span>
-      <div role="radiogroup" aria-label="Alcance das alterações" className="flex rounded-md border border-[#e3e2df] p-0.5">
+    <div className="mb-3 flex flex-wrap items-center justify-end gap-x-2.5 gap-y-1 text-[#787774]">
+      {permanent && <span className="text-xs">Mudanças também vão para o modelo dos próximos dias.</span>}
+      <span className="font-retro text-[17px] uppercase tracking-[0.14em]">Alterações valem</span>
+      <div role="radiogroup" aria-label="Alcance das alterações" className="flex border-2 border-[#2f6a96]">
         {option(false, "Só hoje", "Muda apenas este dia.")}
         {option(true, "Sempre", "Muda também o modelo usado para criar os próximos dias.")}
       </div>
