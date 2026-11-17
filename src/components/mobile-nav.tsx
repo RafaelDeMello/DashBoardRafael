@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { LayoutList, ListChecks, Settings, type LucideIcon } from "lucide-react";
+import { LayoutList, ListChecks, NotebookText, Settings, type LucideIcon } from "lucide-react";
 import type { NavKey } from "@/components/day/sidebar";
 
 const TABS: { key: NavKey; label: string; icon: LucideIcon; href: string }[] = [
   { key: "tasks", label: "Tasks", icon: ListChecks, href: "/" },
   { key: "modelos", label: "Modelos", icon: LayoutList, href: "/modelos" },
+  { key: "notas", label: "Notas", icon: NotebookText, href: "/notas" },
   { key: "configuracoes", label: "Config.", icon: Settings, href: "/configuracoes" },
 ];
 
@@ -22,7 +23,7 @@ export function MobileNav({ active }: { active: NavKey }) {
             key={key}
             href={href}
             aria-current={isActive ? "page" : undefined}
-            className={`flex h-[58px] flex-1 flex-col items-center justify-center border-t-2 font-retro text-[17px] uppercase tracking-[0.1em] transition-colors ${
+            className={`flex h-[58px] flex-1 flex-col items-center justify-center border-t-2 font-retro text-[16px] uppercase tracking-[0.06em] transition-colors ${
               isActive
                 ? "border-[#19e6ff] bg-[#16283d] text-[#19e6ff]"
                 : "border-transparent text-[#8d96a6] active:bg-[#151926]"

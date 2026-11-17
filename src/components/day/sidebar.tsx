@@ -4,6 +4,7 @@ import {
   ChevronsRight,
   LayoutList,
   ListChecks,
+  NotebookText,
   LogOut,
   Settings,
   type LucideIcon,
@@ -13,12 +14,13 @@ import { logout } from "@/app/login/actions";
 import type { DayProgress } from "@/lib/progress";
 import { MonthCalendar } from "./month-calendar";
 
-export type NavKey = "tasks" | "modelos" | "configuracoes";
+export type NavKey = "tasks" | "modelos" | "notas" | "configuracoes";
 
 // Ordem dos módulos no menu
 const NAV: { key: NavKey; label: string; icon: LucideIcon; href: string }[] = [
   { key: "tasks", label: "TASKS", icon: ListChecks, href: "/" },
   { key: "modelos", label: "MODELOS", icon: LayoutList, href: "/modelos" },
+  { key: "notas", label: "NOTAS", icon: NotebookText, href: "/notas" },
   { key: "configuracoes", label: "CONFIGURAÇÕES", icon: Settings, href: "/configuracoes" },
 ];
 

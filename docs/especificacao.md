@@ -29,6 +29,12 @@ o conteúdo é livre.
   (e a numeração acompanha).
 - Itens ficam dentro de seções.
 
+### Notas
+- **Repositórios** (raiz de uma árvore), **pastas** (até 8 níveis) e **arquivos**; nomes únicos por pasta (sem diferenciar maiúsculas).
+- Arquivo sem extensão ou `.nota` = nota de tópicos; com extensão de código = editor de texto.
+- Mover (inclusive entre repositórios, sem ciclos), renomear, apagar com "Desfazer". Limites: 50 repositórios, 2000 itens por repositório, 500 mil caracteres por arquivo.
+- Etapa 2 (ainda não feita): cores de sintaxe, abas de arquivos abertos, busca por nome e conteúdo, painel "Estrutura".
+
 ### Modelos e dias
 - Criar, editar e apagar modelos.
 - Criar o dia de uma data **copiando um modelo** (cópia idêntica).

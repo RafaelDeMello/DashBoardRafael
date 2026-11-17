@@ -11,7 +11,7 @@ branca, onde se lê e marca a lista, é limpa e amigável.
 ## Layout da tela do dia
 
 - **Menu à esquerda** (recolhido por padrão): só ícones. Módulos, nesta ordem:
-  **Tasks, Modelos, Configurações** (Modelos tem lista à esquerda e editor ao lado; Configurações tem perfil, senha e aparelhos. Configurações, Modelos e Acessos usam "janelas" (`components/win.tsx`): faixa clara com título preto, moldura azul-petróleo e sombra dura).
+  **Tasks, Modelos, Notas, Configurações** (Modelos tem lista à esquerda e editor ao lado; Configurações tem perfil, senha e aparelhos. Configurações, Modelos e Acessos usam "janelas" (`components/win.tsx`): faixa clara com título preto, moldura azul-petróleo e sombra dura).
   Não há abas Dia/Semana/Mês.
 - **Folha branca** no centro. No topo, **uma barra contínua que ocupa toda a largura da
   folha**, com **cinco cards do mesmo tamanho** (cada um com 1/5 da largura), encostados
@@ -88,3 +88,19 @@ branca, onde se lê e marca a lista, é limpa e amigável.
 ## Login
 
 Deve seguir o mesmo nível retrô (a atualizar depois: hoje está mais retrô que a tela do dia).
+
+## Notas (tela escura, estilo IDE)
+
+Única tela inteiramente escura do app (as outras são papel branco); aprovada nos mockups da "IDE escura".
+
+- **Raiz (`/notas`):** cada repositório é uma **pasta em pixel** (`components/notas/pixel-folder.tsx`, estilo Windows 3.1 / Mac System 1),
+  todas iguais. Um clique seleciona, duplo clique (ou Enter) abre; no toque, um toque abre.
+- **Repositório (`/notas/[repoId]`):** árvore de pastas e arquivos à esquerda e editor à direita, com o caminho, a aba do arquivo,
+  a barra de status retrô e a linha de teclas de função (F2 nova nota, F3 nova pasta, F6 renomear, Del apagar).
+- **Ícones como nas IDEs:** o arquivo ganha o ícone da **extensão** (`.js`, `.py`, `.sql`, `Dockerfile`...) e a pasta o do **assunto**
+  sugerido pelo nome (banco de dados, infra, docker...). Regras em `src/lib/note-names.ts`.
+- **Editores:** sem extensão ou `.nota` = editor de notas de tópicos (TipTap, guarda JSON); outras extensões = editor de texto com
+  números de linha (cores de sintaxe, abas, busca e painel "Estrutura" ficam para a etapa 2). Salvamento automático.
+- **Mover/apagar:** botão direito, "⋯" ou toque longo; arrastar no computador; "Mover para…" (inclusive para outro repositório);
+  apagar é reversível ("Desfazer"). Apagar um repositório pede o nome exato.
+- **Celular:** a árvore e o editor são duas telas; a barra de formatação fica acima da barra inferior.

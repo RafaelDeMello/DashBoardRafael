@@ -114,3 +114,62 @@ export const items = pgTable(
   },
   (t) => [index("items_section_idx").on(t.sectionId)],
 );
+
+// ---------- Notas (repositórios, pastas e arquivos) ----------
+// Um repositório é a raiz de uma árvore de pastas e arquivos (como um projeto numa IDE).
+// Tudo pertence a um usuário; "apagar" é reversível (deleted_at), como nas listas do dia.
+
+export const noteRepos = pgTable(
+  "note_repos",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  },
+  (t) => [
+    index("note_repos_user_idx").on(t.userId),
+    // nomes únicos por usuário (sem diferenciar maiúsculas), entre os não apagados
+    uniqueIndex("note_repos_unique_name")
+      .on(t.userId, sql`lower(${t.name})`)
+      .where(sql`${t.deletedAt} is null`),
+  ],
+);
+
+export const noteKind = pgEnum("note_kind", ["folder", "file"]);
+
+export const noteNodes = pgTable(
+  "note_nodes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    // user_id repetido de propósito: toda consulta filtra por ele (defesa contra IDOR)
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    repoId: uuid("repo_id")
+      .notNull()
+      .references(() => noteRepos.id, { onDelete: "cascade" }),
+    parentId: uuid("parent_id").references((): AnyPgColumn => noteNodes.id, { onDelete: "cascade" }),
+    kind: noteKind("kind").notNull(),
+    name: text("name").notNull(),
+    // só pastas: chave do ícone escolhido (ex.: "database"); nulo = sugerido pelo nome
+    icon: text("icon"),
+    // só arquivos: texto do arquivo (JSON do editor de notas, ou código puro)
+    content: text("content"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  },
+  (t) => [
+    index("note_nodes_repo_idx").on(t.repoId),
+    index("note_nodes_parent_idx").on(t.parentId),
+    // sem nomes repetidos na mesma pasta (nem na raiz do repositório)
+    uniqueIndex("note_nodes_unique_name")
+      .on(t.repoId, sql`coalesce(${t.parentId}, '00000000-0000-0000-0000-000000000000'::uuid)`, sql`lower(${t.name})`)
+      .where(sql`${t.deletedAt} is null`),
+  ],
+);
