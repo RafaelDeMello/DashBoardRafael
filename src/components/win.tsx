@@ -3,17 +3,17 @@
 
 export const winInput =
   "w-full rounded-none border border-[#9fb0c3] bg-white px-2.5 py-1.5 text-sm text-[#37352f] outline-none transition " +
-  "placeholder:text-[#b4b2ad] focus:border-[#2f6a96] focus:shadow-[2px_2px_0_#2f6a96] max-md:text-base";
+  "placeholder:text-[#b4b2ad] focus:border-[#2f6a96] focus:shadow-[2px_2px_0_#2f6a96] max-md:py-2.5 max-md:text-base";
 
 export const winLabel = "font-retro text-[15px] uppercase tracking-[0.12em] text-[#787774]";
 
 /** Botão principal: azul-escuro com sombra dura que "afunda" ao clicar. */
 export const btnPrimary =
-  "rounded-none border border-[#2f6a96] bg-[#16283d] px-3 py-1.5 text-xs text-[#dfe6f5] shadow-[3px_3px_0_#08121f] transition " +
+  "rounded-none border border-[#2f6a96] bg-[#16283d] px-3 py-1.5 max-md:py-2.5 max-md:text-sm text-xs text-[#dfe6f5] shadow-[3px_3px_0_#08121f] transition " +
   "hover:bg-[#1d3652] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_#08121f] disabled:cursor-wait disabled:opacity-60";
 
 export const btnGhost =
-  "rounded-none border border-[#16283d] bg-white px-3 py-1.5 text-xs text-[#16283d] transition hover:bg-[#f4f7fa] disabled:cursor-wait disabled:opacity-60";
+  "rounded-none border border-[#16283d] bg-white px-3 py-1.5 max-md:py-2.5 max-md:text-sm text-xs text-[#16283d] transition hover:bg-[#f4f7fa] disabled:cursor-wait disabled:opacity-60";
 
 export function Win({
   title,

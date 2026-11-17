@@ -21,6 +21,8 @@ export default async function ModelosPage({
   // Modelo aberto: ?m=<id> (se não for um modelo deste usuário, abre o primeiro)
   const wanted = typeof m === "string" ? templates.find((t) => t.id === m) : undefined;
   const selected = wanted ?? templates[0];
+  // No celular são duas telas: a lista (sem ?m) e o editor (com ?m). No computador aparecem juntas.
+  const showEditorOnPhone = !!wanted || templates.length === 0;
   const data = selected ? await getTemplate(user.id, selected.id) : null;
 
   return (
@@ -28,7 +30,11 @@ export default async function ModelosPage({
       <article className="min-w-0 flex-1 overflow-y-auto bg-white px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6 text-[#37352f] md:px-6">
         <div className="mb-4 text-xs text-[#9b9a97]">Only-Tasks</div>
         <div className="flex flex-col gap-5 pb-2 pr-[3px] lg:flex-row lg:items-start">
-          <Win title="Modelos" squares={false} className="flex-none lg:w-[230px]">
+          <Win
+            title="Modelos"
+            squares={false}
+            className={`flex-none lg:w-[230px] ${wanted ? "max-lg:hidden" : ""}`}
+          >
             <div className="p-2">
               <nav aria-label="Modelos" className="mb-3 flex flex-col gap-1">
                 {templates.map((t) => (
@@ -56,7 +62,12 @@ export default async function ModelosPage({
             </div>
           </Win>
 
-          <div className="min-w-0 flex-1">
+          <div className={`min-w-0 flex-1 ${showEditorOnPhone ? "" : "max-lg:hidden"}`}>
+            {wanted && (
+              <Link href="/modelos" className="mb-3 inline-block text-xs text-[#787774] hover:text-[#2f6a96] lg:hidden">
+                ‹ Todos os modelos
+              </Link>
+            )}
             {selected && data ? (
               <Win title={<TemplateTitle key={`titulo-${selected.id}`} id={selected.id} name={selected.name} />}>
                 <div className="p-4">
@@ -82,7 +93,7 @@ export default async function ModelosPage({
             ) : (
               <Win title="Crie seu primeiro modelo" squares={false}>
                 <div className="p-4 text-sm text-[#787774]">
-                  Um modelo é uma lista pronta para repetir em vários dias. Use “Novo modelo” ao lado ou, em
+                  Um modelo é uma lista pronta para repetir em vários dias. Use “Novo modelo” ou, em
                   qualquer dia, o menu “⋯” → “Salvar este dia como modelo”.
                 </div>
               </Win>

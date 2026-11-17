@@ -39,7 +39,7 @@ branca, onde se lê e marca a lista, é limpa e amigável.
   onde continua visível. Quando o cartão está oculto, o progresso do dia aparece como
   uma faixa no topo da folha.
 - O app lembra o estado (aberto/recolhido) entre visitas.
-- No celular: o menu vira gaveta (por cima da folha) e o resumo fica no topo da folha.
+- No celular: o menu lateral some e entra uma barra inferior com Tasks, Modelos e Config. (`components/mobile-nav.tsx`); o "Sair" fica em Configurações. Em Modelos a lista e o editor viram duas telas (`?m=` abre o editor). Botões e campos têm pelo menos 41 px de altura.
 
 ### Calendário do menu
 

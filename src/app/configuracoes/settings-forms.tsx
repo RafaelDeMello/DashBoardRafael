@@ -8,6 +8,7 @@ import {
   updateNameAction,
   type SettingsState,
 } from "./actions";
+import { logout } from "@/app/login/actions";
 import { btnGhost, btnPrimary, winInput, winLabel } from "@/components/win";
 
 const inputClass = winInput;
@@ -134,6 +135,12 @@ export function DevicesPanel({ activeSessions }: { activeSessions: number }) {
         >
           Sair de todos os aparelhos
         </button>
+        {/* No celular não há menu lateral com o botão Sair */}
+        <form action={logout} className="md:hidden">
+          <button type="submit" className={ghostButtonClass}>
+            Sair deste aparelho
+          </button>
+        </form>
       </div>
     </div>
   );

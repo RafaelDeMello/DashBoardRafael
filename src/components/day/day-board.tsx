@@ -153,7 +153,7 @@ function ScopeToggle({ permanent, onChange }: { permanent: boolean; onChange: (v
 function AddInput({ placeholder, onAdd }: { placeholder: string; onAdd: (title: string) => void }) {
   return (
     <form
-      className="flex items-center gap-2.5 py-1"
+      className="flex items-center gap-2.5 py-1 max-md:py-2.5"
       onSubmit={(e) => {
         e.preventDefault();
         const input = e.currentTarget.elements.namedItem("title") as HTMLInputElement;
@@ -268,7 +268,7 @@ function ItemRow({
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={`group/i ${isDragging ? "relative z-10 opacity-60" : ""} ${pending ? "opacity-60" : ""}`}
     >
-      <div className="flex items-center gap-2.5 py-1 text-sm">
+      <div className="flex items-center gap-2.5 py-1 text-sm max-md:py-2.5 max-md:text-[15px]">
         <button
           type="button"
           {...attributes}

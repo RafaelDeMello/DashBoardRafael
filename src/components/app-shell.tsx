@@ -1,3 +1,4 @@
+import { MobileNav } from "@/components/mobile-nav";
 import { Starfield } from "@/components/starfield";
 import { Sidebar, type NavKey } from "@/components/day/sidebar";
 import type { DayProgress } from "@/lib/progress";
@@ -19,13 +20,14 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative flex h-dvh overflow-hidden pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)]">
+    <div className="relative flex h-dvh flex-col overflow-hidden pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] md:flex-row">
       <Starfield />
       <Sidebar active={active} expanded={expanded} date={date} progress={progress} />
-      <main className="relative z-10 flex min-w-0 flex-1 gap-5 px-3 pt-5 md:px-5">
+      <main className="relative z-10 flex min-h-0 min-w-0 flex-1 gap-5 px-1.5 pt-1.5 md:px-5 md:pt-5">
         {children}
         {aside}
       </main>
+      <MobileNav active={active} />
     </div>
   );
 }

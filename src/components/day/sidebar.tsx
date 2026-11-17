@@ -36,11 +36,10 @@ export function Sidebar({
   const handleLabel = expanded ? "Recolher menu" : "Expandir menu";
 
   return (
+    // No celular o menu lateral some: quem navega é a barra inferior (MobileNav)
     <aside
-      className={`relative z-30 flex-none border-r border-[#1e222c] py-[18px] text-[#8b93a5] ${
-        expanded
-          ? "w-[212px] max-md:absolute max-md:inset-y-0 max-md:left-0 max-md:bg-[#0a0a0f]"
-          : "w-[58px]"
+      className={`relative z-30 flex-none border-r border-[#1e222c] py-[18px] text-[#8b93a5] max-md:hidden ${
+        expanded ? "w-[212px]" : "w-[58px]"
       }`}
     >
       {/* Alça na borda do menu: sempre no mesmo lugar, com setas */}
