@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { noteNodes, noteRepos } from "@/db/schema";
 import {
@@ -11,6 +11,15 @@ import {
   validateName,
   withSuffix,
 } from "@/lib/note-names";
+import {
+  MAX_FILES,
+  SEARCH_MAX,
+  SEARCH_MIN,
+  escapeLike,
+  findMatches,
+  textOfNoteContent,
+  type SearchResult,
+} from "@/lib/note-search";
 
 // Camada de dados de Notas. REGRAS (as mesmas de days.ts):
 // 1) Toda função recebe o userId da SESSÃO e só toca em linhas desse usuário.
@@ -408,7 +417,107 @@ export async function saveFile(userId: string, nodeId: string, content: string):
   }
   await db
     .update(noteNodes)
-    .set({ content, updatedAt: new Date() })
+    // Nota: guarda também o texto puro (sem a estrutura JSON) para a busca
+    .set({
+      content,
+      searchText: fileType(node.name) === "note" ? textOfNoteContent(content) : null,
+      updatedAt: new Date(),
+    })
     .where(and(eq(noteNodes.id, nodeId), eq(noteNodes.userId, userId)));
   return ok(undefined);
+}
+
+// ---------- Busca ----------
+
+/**
+ * Procura (sem diferenciar maiúsculas) no NOME e no CONTEÚDO dos arquivos do usuário.
+ * Com `repoId`, só nesse repositório; sem ele, em todos. Só arquivos e repositórios não apagados.
+ */
+export async function searchNotes(
+  userId: string,
+  rawQuery: string,
+  repoId: string | null,
+): Promise<{ results: SearchResult[]; truncated: boolean }> {
+  const query = rawQuery.trim();
+  if (query.length < SEARCH_MIN || query.length > SEARCH_MAX) return { results: [], truncated: false };
+  if (repoId && !(await findRepo(db, userId, repoId))) return { results: [], truncated: false };
+
+  const like = `%${escapeLike(query)}%`;
+  const rows = await db
+    .select({
+      id: noteNodes.id,
+      repoId: noteNodes.repoId,
+      parentId: noteNodes.parentId,
+      name: noteNodes.name,
+      content: noteNodes.content,
+      searchText: noteNodes.searchText,
+      repoName: noteRepos.name,
+    })
+    .from(noteNodes)
+    .innerJoin(noteRepos, eq(noteRepos.id, noteNodes.repoId))
+    .where(
+      and(
+        eq(noteNodes.userId, userId),
+        eq(noteRepos.userId, userId),
+        isNull(noteNodes.deletedAt),
+        isNull(noteRepos.deletedAt),
+        eq(noteNodes.kind, "file"),
+        repoId ? eq(noteNodes.repoId, repoId) : undefined,
+        or(
+          sql`${noteNodes.name} ilike ${like}`,
+          sql`${noteNodes.searchText} ilike ${like}`,
+          // notas salvas antes da busca existir ainda não têm o texto puro: olha o JSON (o filtro fino é feito abaixo)
+          and(isNull(noteNodes.searchText), sql`${noteNodes.content} ilike ${like}`),
+        ),
+      ),
+    )
+    .orderBy(asc(sql`lower(${noteRepos.name})`), asc(sql`lower(${noteNodes.name})`), asc(noteNodes.id))
+    .limit(MAX_FILES + 1);
+
+  const truncated = rows.length > MAX_FILES;
+  const kept = rows.slice(0, MAX_FILES);
+
+  // Caminho das pastas até cada arquivo (sobe de nível em nível, no máximo 8 vezes)
+  const names = new Map<string, { parentId: string | null; name: string }>();
+  let pending = [...new Set(kept.map((r) => r.parentId).filter((p): p is string => !!p))];
+  for (let i = 0; i < MAX_DEPTH && pending.length; i++) {
+    const folders = await db
+      .select({ id: noteNodes.id, parentId: noteNodes.parentId, name: noteNodes.name })
+      .from(noteNodes)
+      .where(and(eq(noteNodes.userId, userId), inArray(noteNodes.id, pending)));
+    pending = [];
+    for (const f of folders) {
+      names.set(f.id, { parentId: f.parentId, name: f.name });
+      if (f.parentId && !names.has(f.parentId)) pending.push(f.parentId);
+    }
+  }
+  const pathOf = (parentId: string | null) => {
+    const out: string[] = [];
+    let cur = parentId;
+    while (cur && names.has(cur)) {
+      out.unshift(names.get(cur)!.name);
+      cur = names.get(cur)!.parentId;
+    }
+    return out;
+  };
+
+  const results: SearchResult[] = [];
+  for (const r of kept) {
+    const isNote = fileType(r.name) === "note";
+    const text = r.searchText ?? (isNote ? textOfNoteContent(r.content ?? "") : (r.content ?? ""));
+    const { matches, total } = findMatches(text, query);
+    const nameMatch = r.name.toLowerCase().includes(query.toLowerCase());
+    if (!nameMatch && total === 0) continue; // falso positivo do filtro grosseiro (ex.: chave do JSON)
+    results.push({
+      id: r.id,
+      repoId: r.repoId,
+      repoName: r.repoName,
+      name: r.name,
+      path: pathOf(r.parentId),
+      nameMatch,
+      matches,
+      total,
+    });
+  }
+  return { results, truncated };
 }

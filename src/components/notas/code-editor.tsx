@@ -44,7 +44,7 @@ const theme = EditorView.theme(
   { dark: true },
 );
 
-const highlight = HighlightStyle.define([
+const highlightStyle = HighlightStyle.define([
   { tag: [t.keyword, t.controlKeyword, t.operatorKeyword, t.modifier], color: "#c678dd" },
   { tag: [t.string, t.special(t.string), t.character], color: "#98c379" },
   { tag: [t.number, t.bool, t.null, t.atom], color: "#d19a66" },
@@ -77,11 +77,13 @@ export function CodeEditor({
   nodeId,
   name,
   initial,
+  highlight,
   onStatus,
 }: {
   nodeId: string;
   name: string;
   initial: string;
+  highlight?: { query: string; line: number | null } | null;
   onStatus: (s: SaveStatus) => void;
 }) {
   const { status, schedule } = useAutosave(nodeId);
@@ -115,7 +117,7 @@ export function CodeEditor({
           bracketMatching(),
           closeBrackets(),
           autocompletion({ activateOnTyping: false }),
-          syntaxHighlighting(highlight),
+          syntaxHighlighting(highlightStyle),
           theme,
           EditorView.theme({ "&": { fontSize: touch ? "16px" : "13px" } }),
           language.of([]),
@@ -128,6 +130,22 @@ export function CodeEditor({
       }),
     });
     viewRef.current = view;
+
+    // Aberto pela busca: seleciona o trecho procurado (na linha do resultado, se houver) e rola até ele
+    if (highlight?.query) {
+      const q = highlight.query.toLowerCase();
+      const doc = view.state.doc;
+      const line = highlight.line && highlight.line <= doc.lines ? doc.line(highlight.line) : null;
+      const base = line ? line.from : 0;
+      const text = line ? line.text : doc.toString();
+      const i = text.toLowerCase().indexOf(q);
+      if (i >= 0) {
+        view.dispatch({
+          selection: { anchor: base + i, head: base + i + q.length },
+          effects: EditorView.scrollIntoView(base + i, { y: "center" }),
+        });
+      }
+    }
 
     let alive = true;
     loadLanguage(fileIcon(name))

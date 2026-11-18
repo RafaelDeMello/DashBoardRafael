@@ -80,7 +80,7 @@ Limite conhecido: não há teste de navegador. A interface continua sendo verifi
 - A checagem de sessão vive na camada de acesso a dados (`src/lib/dal.ts`), não só no proxy.
 - Troca de senha exige a senha atual (máx. 5 erros por 15 min), encerra todas as sessões antigas e
   cria uma nova neste aparelho. Em Configurações dá para sair dos outros aparelhos ou de todos.
-- Notas: toda função de `src/lib/notes.ts` recebe o usuário da sessão; mover valida dono, repositório de destino, ciclos e profundidade;
+- Notas: a busca só olha arquivos do próprio usuário (nome, texto puro das notas e código), com o texto digitado escapado no LIKE; toda função de `src/lib/notes.ts` recebe o usuário da sessão; mover valida dono, repositório de destino, ciclos e profundidade;
   apagar repositório exige o nome exato (conferido no servidor); o conteúdo das notas é JSON validado, nunca HTML.
 - `.env` nunca vai para o git.
 

@@ -1,0 +1,1 @@
+ALTER TABLE "note_nodes" ADD COLUMN "search_text" text;

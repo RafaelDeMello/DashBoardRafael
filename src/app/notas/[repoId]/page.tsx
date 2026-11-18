@@ -17,7 +17,7 @@ export default async function RepoPage({
 }) {
   const user = await verifySession();
   const { repoId } = await params;
-  const { f } = await searchParams;
+  const { f, q, l } = await searchParams;
   // Id que não é um UUID nem chega ao banco
   if (!z.uuid().safeParse(repoId).success) notFound();
 
@@ -33,6 +33,9 @@ export default async function RepoPage({
   const file = fileId ? await getFile(user.id, fileId) : null;
   // O arquivo precisa ser deste repositório
   const openFile = file && file.repoId === repoId ? file : null;
+  // Vindo da busca: ?q=texto&l=linha (só para destacar o trecho ao abrir)
+  const query = typeof q === "string" ? q.slice(0, 100) : "";
+  const line = typeof l === "string" && /^\d{1,6}$/.test(l) ? Number(l) : null;
 
   return (
     <AppShell active="notas" expanded={shell.expanded} date={shell.today} progress={shell.progress}>
@@ -42,6 +45,7 @@ export default async function RepoPage({
           otherRepos={repos.filter((r) => r.id !== repo.id).map((r) => ({ id: r.id, name: r.name }))}
           nodes={nodes}
           file={openFile ? { id: openFile.id, name: openFile.name, content: openFile.content } : null}
+          highlight={openFile && query ? { query, line } : null}
         />
       </article>
     </AppShell>

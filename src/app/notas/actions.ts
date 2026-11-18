@@ -6,6 +6,7 @@ import { z } from "zod";
 import { verifySession } from "@/lib/dal";
 import * as notes from "@/lib/notes";
 import { MAX_CONTENT } from "@/lib/note-names";
+import { SEARCH_MAX, type SearchResult } from "@/lib/note-search";
 import type { ActionResult } from "@/lib/note-messages";
 
 // Toda ação: 1) confere a sessão, 2) valida a entrada, 3) só então mexe nos dados.
@@ -139,4 +140,15 @@ export async function saveFileAction(input: { nodeId: string; content: string })
   const p = z.object({ nodeId: id, content: z.string().max(MAX_CONTENT + 1) }).safeParse(input);
   if (!p.success) return { ok: false, error: "too_large" };
   return fromResult(await notes.saveFile(user.id, p.data.nodeId, p.data.content));
+}
+
+/** Busca por nome e conteúdo. `repoId` nulo = em todos os repositórios do usuário. */
+export async function searchNotesAction(input: {
+  query: string;
+  repoId: string | null;
+}): Promise<{ ok: true; results: SearchResult[]; truncated: boolean } | { ok: false; error: string }> {
+  const user = await verifySession();
+  const p = z.object({ query: z.string().max(SEARCH_MAX * 2), repoId: id.nullable() }).safeParse(input);
+  if (!p.success) return { ok: false, error: "invalid" };
+  return { ok: true, ...(await notes.searchNotes(user.id, p.data.query, p.data.repoId)) };
 }

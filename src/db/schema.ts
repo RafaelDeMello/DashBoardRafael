@@ -160,6 +160,8 @@ export const noteNodes = pgTable(
     icon: text("icon"),
     // só arquivos: texto do arquivo (JSON do editor de notas, ou código puro)
     content: text("content"),
+    // só notas de tópicos: o texto puro (sem a estrutura JSON), mantido ao salvar, para a busca
+    searchText: text("search_text"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),

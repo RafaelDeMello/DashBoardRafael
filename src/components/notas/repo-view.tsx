@@ -13,6 +13,7 @@ import {
   FolderPlus,
   MoreVertical,
   Pencil,
+  Search,
   Trash2,
 } from "lucide-react";
 import {
@@ -29,6 +30,7 @@ import { DarkDialog, ToastBar, darkBtnGhost, type Toast } from "./dlg";
 import { FileGlyph, FolderGlyph } from "./icons";
 import { NoteEditor } from "./note-editor";
 import { PixelFolder } from "./pixel-folder";
+import { SearchPanel } from "./search-panel";
 import type { SaveStatus } from "./use-autosave";
 
 export type TreeNode = {
@@ -43,6 +45,8 @@ type Props = {
   otherRepos: { id: string; name: string }[];
   nodes: TreeNode[];
   file: { id: string; name: string; content: string } | null;
+  /** Texto procurado (e linha) quando o arquivo foi aberto a partir da busca. */
+  highlight: { query: string; line: number | null } | null;
 };
 
 const collator = new Intl.Collator("pt-BR", { numeric: true, sensitivity: "base" });
@@ -56,7 +60,7 @@ const STATUS_TEXT: Record<SaveStatus, string> = {
 type Creating = { parentId: string | null; kind: "folder" | "file" } | null;
 type Menu = { x: number; y: number; nodeId: string | null } | null;
 
-export function RepoView({ repo, otherRepos, nodes, file }: Props) {
+export function RepoView({ repo, otherRepos, nodes, file, highlight }: Props) {
   const router = useRouter();
   const byId = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
   const children = useMemo(() => {
@@ -102,7 +106,21 @@ export function RepoView({ repo, otherRepos, nodes, file }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
+  // Vindo de um resultado de busca, o painel de busca já abre com o texto procurado
+  const [searching, setSearching] = useState(false);
   const closeToast = useCallback(() => setToast(null), []);
+
+  // Ctrl+Shift+F abre a busca (como no VS Code)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        setSearching(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   // Esc fecha o menu de ações
   useEffect(() => {
@@ -375,7 +393,16 @@ export function RepoView({ repo, otherRepos, nodes, file }: Props) {
         <span className="hidden text-xs text-[#6e7a8a] sm:inline">
           · {fileCount} {fileCount === 1 ? "arquivo" : "arquivos"}
         </span>
-        <Link href="/notas" className="ml-auto text-xs text-[#8b949e] hover:text-[#19e6ff] max-md:hidden">
+        <button
+          type="button"
+          onClick={() => setSearching(true)}
+          aria-label="Buscar nas notas"
+          className="ml-auto flex items-center gap-1 text-xs text-[#8b949e] hover:text-[#19e6ff]"
+        >
+          <Search size={14} />
+          <span className="max-md:hidden">Buscar</span>
+        </button>
+        <Link href="/notas" className="text-xs text-[#8b949e] hover:text-[#19e6ff] max-md:hidden">
           Todos os repositórios
         </Link>
       </div>
@@ -412,9 +439,25 @@ export function RepoView({ repo, otherRepos, nodes, file }: Props) {
             void move(id, repo.id, null);
           }}
         >
+          {searching ? (
+            <SearchPanel
+              repoId={repo.id}
+              repoName={repo.name}
+              initialQuery={highlight?.query ?? ""}
+              onClose={() => setSearching(false)}
+              onOpen={(r, query, line) => {
+                const q = `q=${encodeURIComponent(query)}${line ? `&l=${line}` : ""}`;
+                router.push(`/notas/${r.repoId}?f=${r.id}&${q}`);
+              }}
+            />
+          ) : (
+          <>
           <div className="flex h-[26px] flex-none items-center justify-between px-2">
             <span className="font-retro text-[16px] uppercase tracking-[0.2em] text-[#19e6ff]">Arquivos</span>
             <span className="flex gap-2.5 text-[#8b949e]">
+              <button type="button" aria-label="Buscar" title="Buscar (Ctrl+Shift+F)" onClick={() => setSearching(true)} className="hover:text-white">
+                <Search size={15} />
+              </button>
               <button type="button" aria-label="Nova nota" title="Nova nota (F2)" onClick={() => startCreate("file")} className="hover:text-white">
                 <FilePlus size={15} />
               </button>
@@ -454,6 +497,8 @@ export function RepoView({ repo, otherRepos, nodes, file }: Props) {
               + Pasta
             </button>
           </div>
+          </>
+          )}
         </div>
 
         {/* Editor */}
@@ -477,9 +522,9 @@ export function RepoView({ repo, otherRepos, nodes, file }: Props) {
                 <span className="truncate">{file.name}</span>
               </div>
               {type === "note" ? (
-                <NoteEditor key={file.id} nodeId={file.id} initial={file.content} onStatus={setSaveStatus} />
+                <NoteEditor key={file.id} nodeId={file.id} initial={file.content} highlight={highlight} onStatus={setSaveStatus} />
               ) : (
-                <CodeEditor key={file.id} nodeId={file.id} name={file.name} initial={file.content} onStatus={setSaveStatus} />
+                <CodeEditor key={file.id} nodeId={file.id} name={file.name} initial={file.content} highlight={highlight} onStatus={setSaveStatus} />
               )}
               <div className="flex h-[22px] flex-none items-center justify-between bg-[#16283d] px-3 font-retro text-[15px] uppercase tracking-[0.06em] text-[#9fb6cc]">
                 <span>

@@ -8,8 +8,8 @@ Ordem sugerida:
 
 1. ~~**Cores de sintaxe** no editor de código~~ **feito** (CodeMirror, uma linguagem carregada por vez; ícones extras de `.git`, `.env`,
    `package.json`, lockfiles, `LICENSE`, `Makefile`, Java, C/C++, Go, Rust, PHP, Vue, XML, TOML, CSV e TXT).
-2. **Busca por nome e conteúdo**: troca a árvore pela lista de resultados agrupada por arquivo, com o trecho e a palavra em destaque;
-   escopo "neste repositório" ou "em todos".
+2. ~~**Busca por nome e conteúdo**~~ **feita** (painel no lugar da árvore, agrupado por arquivo, escopo "neste repositório" ou "todos", Ctrl+Shift+F).
+   Fica para depois: busca sem diferenciar acentos (hoje diferencia) e destaque de todas as ocorrências no editor (hoje seleciona a primeira).
 3. **Abas dos arquivos abertos** (hoje há uma aba só) e **painel "Estrutura"** (títulos da nota, como o Outline do VS Code).
 4. **Seletor de ícone da pasta** ao criar (hoje o ícone é sugerido pelo nome e só dá para trocar por código/rename com `icon`).
 5. **Opcional:** visão alternativa em colunas (Finder) na raiz de Notas.

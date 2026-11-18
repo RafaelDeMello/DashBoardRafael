@@ -22,10 +22,12 @@ const btn =
 export function NoteEditor({
   nodeId,
   initial,
+  highlight,
   onStatus,
 }: {
   nodeId: string;
   initial: string;
+  highlight?: { query: string; line: number | null } | null;
   onStatus: (s: SaveStatus) => void;
 }) {
   const { status, schedule } = useAutosave(nodeId);
@@ -43,6 +45,19 @@ export function NoteEditor({
     editorProps: { attributes: { class: "note-prose", "aria-label": "Texto da nota", spellcheck: "true" } },
     onUpdate: ({ editor: ed }) => schedule(JSON.stringify(ed.getJSON())),
   });
+
+  // Aberta pela busca: seleciona a primeira ocorrência do texto procurado e rola até ela
+  const query = highlight?.query.toLowerCase();
+  useEffect(() => {
+    if (!editor || !query) return;
+    let found: { from: number; to: number } | null = null;
+    editor.state.doc.descendants((node, pos) => {
+      if (found || !node.isText || !node.text) return;
+      const i = node.text.toLowerCase().indexOf(query);
+      if (i >= 0) found = { from: pos + i, to: pos + i + query.length };
+    });
+    if (found) editor.chain().focus().setTextSelection(found).scrollIntoView().run();
+  }, [editor, query]);
 
   const run = (fn: () => boolean) => (e: React.MouseEvent) => {
     e.preventDefault();
