@@ -1,6 +1,6 @@
 # O que falta fazer
 
-Lista viva do que ficou combinado e ainda não foi feito. Atualizada em 2026-11-17.
+Lista viva do que ficou combinado e ainda não foi feito. Atualizada em 2026-11-18.
 
 ## Notas — etapa 2 (a etapa 1 está pronta e commitada)
 
@@ -15,6 +15,18 @@ Ordem sugerida:
    Ainda não existe no celular (a árvore e o editor são telas separadas) nem para funções de código.
 4. ~~**Seletor de ícone da pasta**~~ **feito** (clicar no ícone ao criar a pasta, ou "Mudar ícone…" no menu da pasta; "Automático" volta à sugestão pelo nome).
 5. **Opcional:** visão alternativa em colunas (Finder) na raiz de Notas.
+
+### Lacunas encontradas depois (não faziam parte do plano da etapa 2)
+
+Em ordem de importância:
+
+1. **Lixeira.** O "Desfazer" dura 8 segundos; depois disso o item apagado continua no banco, mas não há tela para ver e recuperar o que foi
+   apagado (apagar uma pasta leva tudo que está dentro). `restoreNode` e `restoreRepo` já existem; falta listar os apagados e restaurar.
+2. **Aviso de conflito ao salvar.** Hoje o salvamento é "o último ganha": a mesma nota aberta em dois lugares (computador e celular, ou duas abas)
+   sobrescreve em silêncio. Falta uma checagem de versão (por exemplo, comparar `updated_at`) e um aviso "esta nota mudou em outro lugar".
+3. **Duplicar** arquivo e pasta (estava nos mockups: Renomear, Mover para, Duplicar, Apagar; só Duplicar não foi feito).
+4. Renomear e apagar o **repositório de dentro dele** (hoje só na raiz de Notas).
+5. Ao abrir uma pasta ou repositório muito grande, a árvore carrega tudo de uma vez (limite atual: 2000 itens por repositório).
 
 Pontos a conferir na etapa 1 (não testados):
 - Arrastar e soltar no computador (testado só por código, não com o mouse real) e toque longo no celular.
