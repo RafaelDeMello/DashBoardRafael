@@ -100,7 +100,8 @@ Deve seguir o mesmo nível retrô (a atualizar depois: hoje está mais retrô qu
 - **Ícones como nas IDEs:** o arquivo ganha o ícone da **extensão** (`.js`, `.py`, `.sql`, `Dockerfile`...) e a pasta o do **assunto**
   sugerido pelo nome (banco de dados, infra, docker...). Regras em `src/lib/note-names.ts`.
 - **Editores:** sem extensão ou `.nota` = editor de notas de tópicos (TipTap, guarda JSON); outras extensões = editor de texto com
-  números de linha (cores de sintaxe, abas, busca e painel "Estrutura" ficam para a etapa 2). Salvamento automático.
+  CodeMirror (cores de sintaxe pela extensão, números de linha, autoindentação, fechamento de parênteses; no celular, barra de símbolos
+  acima do teclado). Abas, busca e painel "Estrutura" ficam para a etapa 2. Salvamento automático.
 - **Mover/apagar:** botão direito, "⋯" ou toque longo; arrastar no computador; "Mover para…" (inclusive para outro repositório);
   apagar é reversível ("Desfazer"). Apagar um repositório pede o nome exato.
 - **Celular:** a árvore e o editor são duas telas; a barra de formatação fica acima da barra inferior.

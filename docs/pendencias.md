@@ -6,8 +6,8 @@ Lista viva do que ficou combinado e ainda não foi feito. Atualizada em 2026-11-
 
 Ordem sugerida:
 
-1. **Cores de sintaxe** no editor de código (hoje é texto simples com números de linha). Plano: CodeMirror, carregado só na tela de Notas.
-   Linguagens iniciais: `.js .ts .py .sql .html .css .json .yml .sh .md` e `Dockerfile`.
+1. ~~**Cores de sintaxe** no editor de código~~ **feito** (CodeMirror, uma linguagem carregada por vez; ícones extras de `.git`, `.env`,
+   `package.json`, lockfiles, `LICENSE`, `Makefile`, Java, C/C++, Go, Rust, PHP, Vue, XML, TOML, CSV e TXT).
 2. **Busca por nome e conteúdo**: troca a árvore pela lista de resultados agrupada por arquivo, com o trecho e a palavra em destaque;
    escopo "neste repositório" ou "em todos".
 3. **Abas dos arquivos abertos** (hoje há uma aba só) e **painel "Estrutura"** (títulos da nota, como o Outline do VS Code).

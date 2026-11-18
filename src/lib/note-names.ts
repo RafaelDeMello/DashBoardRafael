@@ -39,45 +39,102 @@ function extOf(name: string): string {
   return i > 0 ? name.slice(i + 1).toLowerCase() : "";
 }
 
-export function fileType(name: string): FileType {
-  const ext = extOf(name);
-  if (ext === "nota") return "note";
-  if (!ext && !name.startsWith(".") && name !== "Dockerfile") return "note"; // sem extensão = nota
-  return "code";
-}
-
 export type FileIcon =
-  | "note" | "js" | "ts" | "py" | "sql" | "html" | "css" | "json" | "yml" | "sh" | "md" | "docker" | "file";
+  | "note" | "js" | "ts" | "react" | "py" | "sql" | "html" | "css" | "json" | "yml" | "sh" | "md"
+  | "docker" | "git" | "env" | "npm" | "lock" | "license" | "make" | "java" | "c" | "cpp" | "go"
+  | "rust" | "php" | "vue" | "xml" | "toml" | "csv" | "txt" | "file";
+
+// Nomes especiais (sem extensão ou com ponto na frente), como as IDEs reconhecem. Em minúsculas.
+const NAME_ICON: Record<string, FileIcon> = {
+  dockerfile: "docker",
+  "docker-compose.yml": "docker",
+  "docker-compose.yaml": "docker",
+  ".dockerignore": "docker",
+  ".gitignore": "git",
+  ".gitattributes": "git",
+  ".gitmodules": "git",
+  ".gitkeep": "git",
+  ".env": "env",
+  "package.json": "npm",
+  "package-lock.json": "lock",
+  "yarn.lock": "lock",
+  "pnpm-lock.yaml": "lock",
+  license: "license",
+  "license.md": "license",
+  "license.txt": "license",
+  makefile: "make",
+  "tsconfig.json": "ts",
+};
 
 const EXT_ICON: Record<string, FileIcon> = {
-  nota: "note", js: "js", jsx: "js", mjs: "js", ts: "ts", tsx: "ts", py: "py", sql: "sql",
-  html: "html", htm: "html", css: "css", json: "json", yml: "yml", yaml: "yml", sh: "sh", bash: "sh", md: "md",
+  nota: "note",
+  js: "js", mjs: "js", cjs: "js",
+  jsx: "react", tsx: "react",
+  ts: "ts",
+  py: "py",
+  sql: "sql",
+  html: "html", htm: "html",
+  css: "css", scss: "css",
+  json: "json",
+  yml: "yml", yaml: "yml",
+  sh: "sh", bash: "sh", zsh: "sh",
+  md: "md", markdown: "md",
+  git: "git",
+  env: "env",
+  lock: "lock",
+  java: "java",
+  c: "c", h: "c",
+  cpp: "cpp", cc: "cpp", hpp: "cpp",
+  go: "go",
+  rs: "rust",
+  php: "php",
+  vue: "vue",
+  xml: "xml", svg: "xml",
+  toml: "toml", ini: "toml",
+  csv: "csv",
+  txt: "txt", log: "txt",
 };
 
 export function fileIcon(name: string): FileIcon {
-  if (name === "Dockerfile") return "docker";
+  const lower = name.toLowerCase();
+  if (NAME_ICON[lower]) return NAME_ICON[lower];
+  if (lower.startsWith(".env.")) return "env"; // .env.local, .env.production
   const ext = extOf(name);
   if (!ext) return name.startsWith(".") ? "file" : "note";
   return EXT_ICON[ext] ?? "file";
 }
 
+/** Nome sem extensão que NÃO é uma nota: Dockerfile, Makefile, LICENSE... abrem no editor de texto. */
+const PLAIN_NAMES = new Set(["dockerfile", "makefile", "license", "readme", "procfile", "gemfile"]);
+
+export function fileType(name: string): FileType {
+  const ext = extOf(name);
+  if (ext === "nota") return "note";
+  if (!ext && !name.startsWith(".") && !PLAIN_NAMES.has(name.toLowerCase())) return "note"; // sem extensão = nota
+  return "code";
+}
+
 /** Nome que aparece na barra de status. */
 export const LANGUAGE: Partial<Record<FileIcon, string>> = {
-  js: "JavaScript", ts: "TypeScript", py: "Python", sql: "SQL", html: "HTML", css: "CSS",
-  json: "JSON", yml: "YAML", sh: "Shell", md: "Markdown", docker: "Dockerfile", file: "Texto",
+  js: "JavaScript", react: "React (JSX/TSX)", ts: "TypeScript", py: "Python", sql: "SQL", html: "HTML",
+  css: "CSS", json: "JSON", yml: "YAML", sh: "Shell", md: "Markdown", docker: "Dockerfile", git: "Git",
+  env: "Variáveis de ambiente", npm: "package.json", lock: "Arquivo de lock", license: "Licença",
+  make: "Makefile", java: "Java", c: "C", cpp: "C++", go: "Go", rust: "Rust", php: "PHP", vue: "Vue",
+  xml: "XML", toml: "TOML", csv: "CSV", txt: "Texto", file: "Texto",
 };
 
 // ---------- Pastas ----------
 
 export const FOLDER_ICONS = [
   "folder", "database", "database-cog", "algorithms", "server", "docker", "network",
-  "language", "lock", "cloud", "world", "bulb", "code", "book",
+  "language", "lock", "cloud", "world", "bulb", "code", "book", "git",
 ] as const;
 export type FolderIcon = (typeof FOLDER_ICONS)[number];
 
 const normalize = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 
 const SUGGEST: [RegExp, FolderIcon][] = [
+  [/^\.git$|^\.github$|\bgit\b/, "git"],
   [/docker|container/, "docker"],
   [/banco|database|\bdb\b|dados/, "database"],
   [/\bsql\b/, "database-cog"],

@@ -10,11 +10,18 @@ import {
   FileText,
   Folder,
   FolderOpen,
+  GitBranch,
   Globe,
+  KeyRound,
   Languages,
   Lightbulb,
   Lock,
   Network,
+  Atom,
+  Scale,
+  Settings,
+  Table,
+  Wrench,
   Binary,
   Server,
   StickyNote,
@@ -40,6 +47,7 @@ const FOLDER: Record<FolderIcon, { Icon: LucideIcon; color: string }> = {
   bulb: { Icon: Lightbulb, color: "#ffe08a" },
   code: { Icon: Code, color: "#5aa9ff" },
   book: { Icon: BookOpen, color: "#c9a227" },
+  git: { Icon: GitBranch, color: "#f05033" },
 };
 
 export function FolderGlyph({
@@ -67,6 +75,15 @@ const BADGE: Partial<Record<FileIcon, { text: string; bg: string; fg: string }>>
   html: { text: "<>", bg: "#e8794a", fg: "#ffffff" },
   css: { text: "#", bg: "#2f8bd8", fg: "#ffffff" },
   yml: { text: "YML", bg: "#d96b6b", fg: "#ffffff" },
+  npm: { text: "npm", bg: "#cb3837", fg: "#ffffff" },
+  java: { text: "JV", bg: "#e76f00", fg: "#ffffff" },
+  c: { text: "C", bg: "#5c6bc0", fg: "#ffffff" },
+  cpp: { text: "C++", bg: "#00599c", fg: "#ffffff" },
+  go: { text: "GO", bg: "#00add8", fg: "#ffffff" },
+  rust: { text: "RS", bg: "#b7410e", fg: "#ffffff" },
+  php: { text: "PHP", bg: "#777bb3", fg: "#ffffff" },
+  vue: { text: "V", bg: "#41b883", fg: "#1a1a18" },
+  xml: { text: "</>", bg: "#8a6fd0", fg: "#ffffff" },
 };
 
 const PLAIN: Partial<Record<FileIcon, { Icon: LucideIcon; color: string }>> = {
@@ -76,6 +93,15 @@ const PLAIN: Partial<Record<FileIcon, { Icon: LucideIcon; color: string }>> = {
   sh: { Icon: Terminal, color: "#4cc38a" },
   md: { Icon: FileText, color: "#9fb6cc" },
   docker: { Icon: Container, color: "#4aa3ff" },
+  react: { Icon: Atom, color: "#61dafb" },
+  git: { Icon: GitBranch, color: "#f05033" },
+  env: { Icon: KeyRound, color: "#e5b84b" },
+  lock: { Icon: Lock, color: "#8b949e" },
+  license: { Icon: Scale, color: "#c9a227" },
+  make: { Icon: Wrench, color: "#9fb6cc" },
+  toml: { Icon: Settings, color: "#9fb6cc" },
+  csv: { Icon: Table, color: "#4cc38a" },
+  txt: { Icon: FileText, color: "#8b949e" },
   file: { Icon: File, color: "#8b949e" },
 };
 
@@ -92,7 +118,7 @@ export function FileGlyph({ name, size = 15 }: { name: string; size?: number }) 
           height: size,
           background: badge.bg,
           color: badge.fg,
-          fontSize: Math.round(size * (badge.text.length > 2 ? 0.42 : 0.55)),
+          fontSize: Math.round(size * (badge.text.length > 2 ? 0.4 : 0.55)),
           borderRadius: 2,
         }}
       >

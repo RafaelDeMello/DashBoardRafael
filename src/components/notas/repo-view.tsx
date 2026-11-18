@@ -479,7 +479,7 @@ export function RepoView({ repo, otherRepos, nodes, file }: Props) {
               {type === "note" ? (
                 <NoteEditor key={file.id} nodeId={file.id} initial={file.content} onStatus={setSaveStatus} />
               ) : (
-                <CodeEditor key={file.id} nodeId={file.id} initial={file.content} onStatus={setSaveStatus} />
+                <CodeEditor key={file.id} nodeId={file.id} name={file.name} initial={file.content} onStatus={setSaveStatus} />
               )}
               <div className="flex h-[22px] flex-none items-center justify-between bg-[#16283d] px-3 font-retro text-[15px] uppercase tracking-[0.06em] text-[#9fb6cc]">
                 <span>
