@@ -21,6 +21,7 @@ import {
 } from "@codemirror/view";
 import { tags as t } from "@lezer/highlight";
 import { fileIcon } from "@/lib/note-names";
+import { markdownHeadings, type OutlineItem } from "@/lib/note-outline";
 import { loadLanguage } from "./code-lang";
 import { useAutosave, type SaveStatus } from "./use-autosave";
 
@@ -79,18 +80,25 @@ export function CodeEditor({
   initial,
   highlight,
   onStatus,
+  onOutline,
 }: {
   nodeId: string;
   name: string;
   initial: string;
   highlight?: { query: string; line: number | null } | null;
   onStatus: (s: SaveStatus) => void;
+  /** Só para Markdown: avisa os títulos (#) e como pular até um deles. */
+  onOutline?: (nodeId: string, items: OutlineItem[], jump: (pos: number) => void) => void;
 }) {
   const { status, schedule } = useAutosave(nodeId);
   useEffect(() => onStatus(status), [status, onStatus]);
 
   const host = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
+  const outlineRef = useRef(onOutline);
+  useEffect(() => {
+    outlineRef.current = onOutline;
+  }, [onOutline]);
   const scheduleRef = useRef(schedule);
   useEffect(() => {
     scheduleRef.current = schedule;
@@ -101,6 +109,21 @@ export function CodeEditor({
     const language = new Compartment();
     // Em tela de toque a fonte precisa ter 16px, senão o iPhone dá zoom ao tocar no texto
     const touch = window.matchMedia("(pointer: coarse)").matches;
+    const isMarkdown = fileIcon(name) === "md";
+    const jump = (pos: number) => {
+      const v = viewRef.current;
+      if (!v) return;
+      v.dispatch({ selection: { anchor: pos }, effects: EditorView.scrollIntoView(pos, { y: "start", yMargin: 8 }) });
+      v.focus();
+    };
+    const reportOutline = (doc: EditorState["doc"]) => {
+      const lines: { text: string; from: number }[] = [];
+      for (let i = 1; i <= doc.lines; i++) {
+        const l = doc.line(i);
+        lines.push({ text: l.text, from: l.from });
+      }
+      outlineRef.current?.(nodeId, markdownHeadings(lines), jump);
+    };
     const view = new EditorView({
       parent: host.current,
       state: EditorState.create({
@@ -124,12 +147,15 @@ export function CodeEditor({
           keymap.of([...closeBracketsKeymap, ...defaultKeymap, ...historyKeymap, indentWithTab]),
           EditorView.contentAttributes.of({ "aria-label": "Código", autocapitalize: "none", autocorrect: "off" }),
           EditorView.updateListener.of((u) => {
-            if (u.docChanged) scheduleRef.current(u.state.doc.toString());
+            if (!u.docChanged) return;
+            scheduleRef.current(u.state.doc.toString());
+            if (isMarkdown) reportOutline(u.state.doc);
           }),
         ],
       }),
     });
     viewRef.current = view;
+    if (isMarkdown) reportOutline(view.state.doc);
 
     // Aberto pela busca: seleciona o trecho procurado (na linha do resultado, se houver) e rola até ele
     if (highlight?.query) {

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
+import type { OutlineItem } from "@/lib/note-outline";
 import { useAutosave, type SaveStatus } from "./use-autosave";
 
 function parse(content: string) {
@@ -24,15 +25,39 @@ export function NoteEditor({
   initial,
   highlight,
   onStatus,
+  onOutline,
 }: {
   nodeId: string;
   initial: string;
   highlight?: { query: string; line: number | null } | null;
   onStatus: (s: SaveStatus) => void;
+  /** Avisa os títulos (H1/H2) da nota e como pular até um deles — alimenta o painel "Estrutura". */
+  onOutline?: (nodeId: string, items: OutlineItem[], jump: (pos: number) => void) => void;
 }) {
   const { status, schedule } = useAutosave(nodeId);
   // O status sobe para a barra de status da tela
   useEffect(() => onStatus(status), [status, onStatus]);
+
+  const outlineRef = useRef(onOutline);
+  useEffect(() => {
+    outlineRef.current = onOutline;
+  }, [onOutline]);
+  const editorRef = useRef<ReturnType<typeof useEditor>>(null);
+  const jump = useCallback((pos: number) => {
+    editorRef.current?.chain().focus().setTextSelection(pos + 1).scrollIntoView().run();
+  }, []);
+  const report = useCallback(
+    (ed: NonNullable<ReturnType<typeof useEditor>>) => {
+      const items: OutlineItem[] = [];
+      ed.state.doc.descendants((node, pos) => {
+        if (node.type.name !== "heading") return;
+        items.push({ level: Number(node.attrs.level), text: node.textContent.trim() || "(sem título)", pos });
+        return false;
+      });
+      outlineRef.current?.(nodeId, items, jump);
+    },
+    [nodeId, jump],
+  );
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -43,7 +68,14 @@ export function NoteEditor({
     ],
     content: parse(initial),
     editorProps: { attributes: { class: "note-prose", "aria-label": "Texto da nota", spellcheck: "true" } },
-    onUpdate: ({ editor: ed }) => schedule(JSON.stringify(ed.getJSON())),
+    onCreate: ({ editor: ed }) => {
+      editorRef.current = ed;
+      report(ed);
+    },
+    onUpdate: ({ editor: ed }) => {
+      schedule(JSON.stringify(ed.getJSON()));
+      report(ed);
+    },
   });
 
   // Aberta pela busca: seleciona a primeira ocorrência do texto procurado e rola até ela

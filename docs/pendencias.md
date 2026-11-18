@@ -11,7 +11,8 @@ Ordem sugerida:
 2. ~~**Busca por nome e conteúdo**~~ **feita** (painel no lugar da árvore, agrupado por arquivo, escopo "neste repositório" ou "todos", Ctrl+Shift+F).
    Fica para depois: busca sem diferenciar acentos (hoje diferencia) e destaque de todas as ocorrências no editor (hoje seleciona a primeira).
 3. ~~**Abas dos arquivos abertos**~~ **feitas** (até 20 por repositório, lembradas no navegador; ponto amarelo = ainda salvando; fechar a ativa abre a da direita).
-   Falta o **painel "Estrutura"** (títulos da nota, como o Outline do VS Code).
+   ~~**Painel "Estrutura"**~~ **feito** (títulos H1/H2 das notas e `#` dos arquivos Markdown, no computador; clique pula até o título).
+   Ainda não existe no celular (a árvore e o editor são telas separadas) nem para funções de código.
 4. **Seletor de ícone da pasta** ao criar (hoje o ícone é sugerido pelo nome e só dá para trocar por código/rename com `icon`).
 5. **Opcional:** visão alternativa em colunas (Finder) na raiz de Notas.
 

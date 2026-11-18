@@ -11,6 +11,7 @@ import {
   FilePlus,
   FolderInput,
   FolderPlus,
+  Heading,
   MoreVertical,
   Pencil,
   Search,
@@ -27,6 +28,7 @@ import {
 import { LANGUAGE, fileIcon, fileType } from "@/lib/note-names";
 import { NOTE_ERRORS } from "@/lib/note-messages";
 import { closeTab, ensureTab, parseStoredTabs, reconcile, tabsKey } from "@/lib/note-tabs";
+import { sameOutline, type OutlineItem } from "@/lib/note-outline";
 import { CodeEditor } from "./code-editor";
 import { DarkDialog, ToastBar, darkBtnGhost, type Toast } from "./dlg";
 import { FileGlyph, FolderGlyph } from "./icons";
@@ -110,6 +112,12 @@ export function RepoView({ repo, otherRepos, nodes, file, highlight }: Props) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
   // Vindo de um resultado de busca, o painel de busca já abre com o texto procurado
   const [searching, setSearching] = useState(false);
+  // Títulos do arquivo aberto (painel "Estrutura"), enviados pelo editor
+  const [outline, setOutline] = useState<{ fileId: string; items: OutlineItem[]; jump: (pos: number) => void } | null>(null);
+  const [outlineOpen, setOutlineOpen] = useState(true);
+  const onOutline = useCallback((fileId: string, items: OutlineItem[], jump: (pos: number) => void) => {
+    setOutline((prev) => (prev && prev.fileId === fileId && sameOutline(prev.items, items) ? prev : { fileId, items, jump }));
+  }, []);
   const [tabs, setTabs] = useState<string[]>(file ? [file.id] : []);
   const [tabsLoaded, setTabsLoaded] = useState(false);
   const closeToast = useCallback(() => setToast(null), []);
@@ -477,6 +485,9 @@ export function RepoView({ repo, otherRepos, nodes, file, highlight }: Props) {
   // ---------- Editor ----------
 
   const crumbs = file ? ancestorsOf(file.id) : [];
+  // "Estrutura" só existe para notas e arquivos Markdown
+  const hasOutline = !!file && (fileType(file.name) === "note" || fileIcon(file.name) === "md");
+  const outlineItems = hasOutline ? (outline && outline.fileId === file.id ? outline.items : []) : null;
   const type = file ? fileType(file.name) : null;
 
   return (
@@ -588,6 +599,44 @@ export function RepoView({ repo, otherRepos, nodes, file, highlight }: Props) {
               </p>
             )}
           </div>
+          {outlineItems && (
+            <div className="flex max-h-[38%] flex-none flex-col border-t border-[#2a3340] max-md:hidden">
+              <button
+                type="button"
+                aria-expanded={outlineOpen}
+                onClick={() => setOutlineOpen((v) => !v)}
+                className="flex h-[24px] flex-none items-center gap-1 px-2 text-[11px] font-medium uppercase tracking-[0.08em] text-[#8b949e] hover:text-white"
+              >
+                {outlineOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+                Estrutura
+              </button>
+              {outlineOpen && (
+                <div className="min-h-0 overflow-y-auto pb-1">
+                  {outlineItems.length === 0 ? (
+                    <p className="px-3 py-1 text-[11px] text-[#6e7a8a]">
+                      {file && fileType(file.name) === "note"
+                        ? "Sem títulos. Use H1 ou H2 na barra do editor."
+                        : "Sem títulos. Use # no começo da linha."}
+                    </p>
+                  ) : (
+                    outlineItems.map((it, i) => (
+                      <button
+                        key={`${it.pos}-${i}`}
+                        type="button"
+                        title={it.text}
+                        onClick={() => outline?.jump(it.pos)}
+                        style={{ paddingLeft: 12 + (Math.min(it.level, 4) - 1) * 12 }}
+                        className="flex h-[19px] w-full items-center gap-1.5 pr-2 text-left text-[11.5px] text-[#aab3c2] hover:bg-[#222a35] hover:text-white"
+                      >
+                        <Heading size={12} className={`flex-none ${it.level === 1 ? "text-[#79c0ff]" : "text-[#8b949e]"}`} />
+                        <span className="truncate">{it.text}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          )}
           <div className="flex flex-none gap-2 border-t border-[#2a3340] px-2 py-1 font-retro text-[14px] text-[#8aa6bb] max-md:hidden">
             <span><b className="font-normal text-[#19e6ff]">F2</b> Nova</span>
             <span><b className="font-normal text-[#19e6ff]">F3</b> Pasta</span>
@@ -622,9 +671,9 @@ export function RepoView({ repo, otherRepos, nodes, file, highlight }: Props) {
                 <span className="truncate">{file.name}</span>
               </div>
               {type === "note" ? (
-                <NoteEditor key={file.id} nodeId={file.id} initial={file.content} highlight={highlight} onStatus={setSaveStatus} />
+                <NoteEditor key={file.id} nodeId={file.id} initial={file.content} highlight={highlight} onStatus={setSaveStatus} onOutline={onOutline} />
               ) : (
-                <CodeEditor key={file.id} nodeId={file.id} name={file.name} initial={file.content} highlight={highlight} onStatus={setSaveStatus} />
+                <CodeEditor key={file.id} nodeId={file.id} name={file.name} initial={file.content} highlight={highlight} onStatus={setSaveStatus} onOutline={onOutline} />
               )}
               <div className="flex h-[22px] flex-none items-center justify-between bg-[#16283d] px-3 font-retro text-[15px] uppercase tracking-[0.06em] text-[#9fb6cc]">
                 <span>
