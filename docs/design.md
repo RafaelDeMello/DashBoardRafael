@@ -101,7 +101,7 @@ Deve seguir o mesmo nível retrô (a atualizar depois: hoje está mais retrô qu
   sugerido pelo nome (banco de dados, infra, docker...). Regras em `src/lib/note-names.ts`.
 - **Editores:** sem extensão ou `.nota` = editor de notas de tópicos (TipTap, guarda JSON); outras extensões = editor de texto com
   CodeMirror (cores de sintaxe pela extensão, números de linha, autoindentação, fechamento de parênteses; no celular, barra de símbolos
-  acima do teclado). Abas e painel "Estrutura" ficam para a etapa 2. Salvamento automático.
+  acima do teclado). Abas dos arquivos abertos (até 20 por repositório, lembradas neste navegador; no celular viram uma faixa rolável). O painel "Estrutura" fica para depois. Salvamento automático.
 - **Busca (Ctrl+Shift+F ou lupa):** troca a árvore pela lista de resultados, agrupada por arquivo, com o trecho e a palavra em destaque âmbar;
   "Em [repositório]" ou "Todos os repositórios". O resultado abre o arquivo já com a palavra selecionada (`?q=texto&l=linha`).
 - **Mover/apagar:** botão direito, "⋯" ou toque longo; arrastar no computador; "Mover para…" (inclusive para outro repositório);

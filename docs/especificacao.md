@@ -33,7 +33,7 @@ o conteúdo é livre.
 - **Repositórios** (raiz de uma árvore), **pastas** (até 8 níveis) e **arquivos**; nomes únicos por pasta (sem diferenciar maiúsculas).
 - Arquivo sem extensão ou `.nota` = nota de tópicos; com extensão de código = editor de texto.
 - Mover (inclusive entre repositórios, sem ciclos), renomear, apagar com "Desfazer". Limites: 50 repositórios, 2000 itens por repositório, 500 mil caracteres por arquivo.
-- Cores de sintaxe no editor de código e busca por nome e conteúdo (feitas; busca limitada a 50 arquivos, mínimo de 2 letras). Etapa 2 (ainda não feita): abas de arquivos abertos e painel "Estrutura".
+- Cores de sintaxe no editor de código e busca por nome e conteúdo (feitas; busca limitada a 50 arquivos, mínimo de 2 letras). Abas de arquivos abertos (feitas). Ainda não feito: painel "Estrutura" e seletor de ícone da pasta.
 
 ### Modelos e dias
 - Criar, editar e apagar modelos.

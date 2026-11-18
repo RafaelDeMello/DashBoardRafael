@@ -14,6 +14,7 @@ import {
   MoreVertical,
   Pencil,
   Search,
+  X,
   Trash2,
 } from "lucide-react";
 import {
@@ -25,6 +26,7 @@ import {
 } from "@/app/notas/actions";
 import { LANGUAGE, fileIcon, fileType } from "@/lib/note-names";
 import { NOTE_ERRORS } from "@/lib/note-messages";
+import { closeTab, ensureTab, parseStoredTabs, reconcile, tabsKey } from "@/lib/note-tabs";
 import { CodeEditor } from "./code-editor";
 import { DarkDialog, ToastBar, darkBtnGhost, type Toast } from "./dlg";
 import { FileGlyph, FolderGlyph } from "./icons";
@@ -108,6 +110,8 @@ export function RepoView({ repo, otherRepos, nodes, file, highlight }: Props) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
   // Vindo de um resultado de busca, o painel de busca já abre com o texto procurado
   const [searching, setSearching] = useState(false);
+  const [tabs, setTabs] = useState<string[]>(file ? [file.id] : []);
+  const [tabsLoaded, setTabsLoaded] = useState(false);
   const closeToast = useCallback(() => setToast(null), []);
 
   // Ctrl+Shift+F abre a busca (como no VS Code)
@@ -369,6 +373,107 @@ export function RepoView({ repo, otherRepos, nodes, file, highlight }: Props) {
     return out;
   }, [movingNode, children, repo.name]);
 
+  // ---------- Abas dos arquivos abertos ----------
+
+  const fileIds = useMemo(() => new Set(nodes.filter((n) => n.kind === "file").map((n) => n.id)), [nodes]);
+  const activeFileId = file?.id ?? null;
+
+  // Ao abrir um arquivo (pela árvore, busca ou endereço), ele ganha uma aba
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (activeFileId) setTabs((prev) => ensureTab(prev, activeFileId));
+  }, [activeFileId]);
+
+  // Lembra as abas deste repositório neste navegador (só ids; o nome vem da árvore)
+  useEffect(() => {
+    let stored: string[] = [];
+    try {
+      stored = parseStoredTabs(localStorage.getItem(tabsKey(repo.id)));
+    } catch {
+      /* navegador sem armazenamento: as abas valem só nesta visita */
+    }
+    // Ler o armazenamento do navegador só é possível depois de montar (no servidor ele não existe)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setTabs((prev) => {
+      const merged = [...stored];
+      for (const id of prev) if (!merged.includes(id)) merged.push(id);
+      return merged.slice(-20);
+    });
+    setTabsLoaded(true);
+  }, [repo.id]);
+
+  // Aba de arquivo apagado some sozinha (e volta se a exclusão for desfeita e a aba ainda estiver guardada)
+  const visibleTabs = useMemo(() => reconcile(tabs, fileIds), [tabs, fileIds]);
+  useEffect(() => {
+    if (!tabsLoaded) return;
+    try {
+      localStorage.setItem(tabsKey(repo.id), JSON.stringify(visibleTabs));
+    } catch {
+      /* sem armazenamento: tudo bem */
+    }
+  }, [visibleTabs, tabsLoaded, repo.id]);
+
+  const closeFileTab = (id: string) => {
+    const r = closeTab(visibleTabs, id, activeFileId);
+    setTabs(r.tabs);
+    if (id === activeFileId) router.push(r.next ? `/notas/${repo.id}?f=${r.next}` : `/notas/${repo.id}`);
+  };
+
+  const dirty = saveStatus === "dirty" || saveStatus === "saving";
+  const tabStrip =
+    visibleTabs.length > 0 ? (
+      <div
+        role="tablist"
+        aria-label="Arquivos abertos"
+        className="flex h-[28px] flex-none overflow-x-auto border-b border-[#2f6a96] bg-[#1b1f27] [scrollbar-width:none] max-md:h-[40px]"
+      >
+        {visibleTabs.map((id) => {
+          const node = byId.get(id);
+          if (!node) return null;
+          const isActive = id === activeFileId;
+          return (
+            <div
+              key={id}
+              role="tab"
+              aria-selected={isActive}
+              onAuxClick={(e) => e.button === 1 && closeFileTab(id)}
+              className={`group/t -mt-px flex flex-none items-center border-r border-[#2f6a96] text-xs ${
+                isActive ? "border-t-2 border-t-[#19e6ff] bg-[#14181d] text-[#e6edf3]" : "mt-0 text-[#8b949e] hover:bg-[#222a35]"
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() => !isActive && openNode(id)}
+                title={node.name}
+                className="flex max-w-[170px] items-center gap-1.5 py-1 pl-3 pr-1 max-md:py-2.5 max-md:text-sm"
+              >
+                <FileGlyph name={node.name} />
+                <span className="truncate">{node.name}</span>
+              </button>
+              <button
+                type="button"
+                aria-label={`Fechar ${node.name}`}
+                onClick={() => closeFileTab(id)}
+                className="relative mr-1 flex h-5 w-5 flex-none items-center justify-center text-[#6e7a8a] hover:text-white max-md:h-8 max-md:w-8"
+              >
+                {isActive && saveStatus === "error" ? (
+                  <span aria-hidden className="h-2 w-2 rounded-full bg-[#f27d7d]" />
+                ) : isActive && dirty ? (
+                  <>
+                    <span aria-hidden className="h-2 w-2 rounded-full bg-[#e5b84b] group-hover/t:hidden" />
+                    <X size={13} className="hidden group-hover/t:block" />
+                    <span className="sr-only">alterações ainda não salvas</span>
+                  </>
+                ) : (
+                  <X size={13} />
+                )}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    ) : null;
+
   // ---------- Editor ----------
 
   const crumbs = file ? ancestorsOf(file.id) : [];
@@ -505,12 +610,7 @@ export function RepoView({ repo, otherRepos, nodes, file, highlight }: Props) {
         <div className={`min-w-0 flex-1 flex-col bg-[#14181d] ${file ? "flex" : "flex max-md:hidden"}`}>
           {file ? (
             <>
-              <div className="flex h-[28px] flex-none items-center border-b border-[#2f6a96] bg-[#1b1f27]">
-                <div className="-mt-px flex h-[28px] items-center gap-1.5 border-t-2 border-[#19e6ff] bg-[#14181d] px-3 text-xs text-[#e6edf3]">
-                  <FileGlyph name={file.name} />
-                  {file.name}
-                </div>
-              </div>
+              {tabStrip}
               <div className="flex flex-none items-center gap-1 overflow-hidden px-3 pt-1.5 text-[11px] text-[#8b949e]">
                 {crumbs.map((c) => (
                   <span key={c.id} className="flex items-center gap-1 whitespace-nowrap">
