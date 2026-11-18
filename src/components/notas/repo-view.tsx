@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ChevronDown,
@@ -12,6 +12,7 @@ import {
   FolderInput,
   FolderPlus,
   Heading,
+  ImagePlus,
   MoreVertical,
   Pencil,
   Search,
@@ -25,12 +26,13 @@ import {
   renameNodeAction,
   restoreNodeAction,
 } from "@/app/notas/actions";
-import { LANGUAGE, fileIcon, fileType } from "@/lib/note-names";
+import { LANGUAGE, fileIcon, fileType, suggestFolderIcon, type FolderIcon } from "@/lib/note-names";
 import { NOTE_ERRORS } from "@/lib/note-messages";
 import { closeTab, ensureTab, parseStoredTabs, reconcile, tabsKey } from "@/lib/note-tabs";
 import { sameOutline, type OutlineItem } from "@/lib/note-outline";
 import { CodeEditor } from "./code-editor";
 import { DarkDialog, ToastBar, darkBtnGhost, type Toast } from "./dlg";
+import { IconPicker } from "./icon-picker";
 import { FileGlyph, FolderGlyph } from "./icons";
 import { NoteEditor } from "./note-editor";
 import { PixelFolder } from "./pixel-folder";
@@ -105,6 +107,7 @@ export function RepoView({ repo, otherRepos, nodes, file, highlight }: Props) {
   const [renaming, setRenaming] = useState<string | null>(null);
   const [menu, setMenu] = useState<Menu>(null);
   const [moving, setMoving] = useState<string | null>(null);
+  const [iconFor, setIconFor] = useState<string | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dropId, setDropId] = useState<string | "root" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -163,9 +166,9 @@ export function RepoView({ repo, otherRepos, nodes, file, highlight }: Props) {
     setCreating({ parentId: parent, kind });
   };
 
-  const submitCreate = async (name: string) => {
+  const submitCreate = async (name: string, icon: FolderIcon | null) => {
     if (!creating) return;
-    const r = await createNodeAction({ repoId: repo.id, parentId: creating.parentId, kind: creating.kind, name });
+    const r = await createNodeAction({ repoId: repo.id, parentId: creating.parentId, kind: creating.kind, name, icon });
     if (!r.ok) return fail(r.error);
     setCreating(null);
     setError(null);
@@ -346,7 +349,7 @@ export function RepoView({ repo, otherRepos, nodes, file, highlight }: Props) {
         key="criar"
         depth={depth}
         kind={creating.kind}
-        onSubmit={(name) => void submitCreate(name)}
+        onSubmit={(name, icon) => void submitCreate(name, icon)}
         onCancel={() => setCreating(null)}
       />
     );
@@ -361,6 +364,9 @@ export function RepoView({ repo, otherRepos, nodes, file, highlight }: Props) {
     items.push({ label: "Nova pasta", icon: <FolderPlus size={15} />, run: () => startCreate("folder", parent) });
     if (menuNode) {
       items.push({ label: "Renomear", icon: <Pencil size={15} />, run: () => setRenaming(menuNode.id) });
+      if (menuNode.kind === "folder") {
+        items.push({ label: "Mudar ícone…", icon: <ImagePlus size={15} />, run: () => setIconFor(menuNode.id) });
+      }
       items.push({ label: "Mover para…", icon: <FolderInput size={15} />, run: () => setMoving(menuNode.id) });
       items.push({ label: "Apagar", icon: <Trash2 size={15} />, danger: true, run: () => void remove(menuNode.id) });
     }
@@ -718,6 +724,28 @@ export function RepoView({ repo, otherRepos, nodes, file, highlight }: Props) {
         </>
       )}
 
+      {iconFor && byId.get(iconFor) && (
+        <DarkDialog title={`Ícone de “${byId.get(iconFor)!.name}”`} onClose={() => setIconFor(null)}>
+          <IconPicker
+            value={(byId.get(iconFor)!.icon as FolderIcon | null) ?? null}
+            suggested={suggestFolderIcon(byId.get(iconFor)!.name)}
+            onChange={async (icon) => {
+              const node = byId.get(iconFor)!;
+              setIconFor(null);
+              const r = await renameNodeAction({ nodeId: node.id, name: node.name, icon });
+              if (!r.ok) return fail(r.error);
+              setError(null);
+              router.refresh();
+            }}
+          />
+          <div className="mt-3">
+            <button type="button" onClick={() => setIconFor(null)} className={darkBtnGhost}>
+              Cancelar
+            </button>
+          </div>
+        </DarkDialog>
+      )}
+
       {movingNode && (
         <DarkDialog title={`Mover “${movingNode.name}”`} onClose={() => setMoving(null)}>
           <div className="max-h-[50vh] overflow-y-auto">
@@ -766,10 +794,13 @@ function CreateRow({
 }: {
   depth: number;
   kind: "folder" | "file";
-  onSubmit: (name: string) => void;
+  onSubmit: (name: string, icon: FolderIcon | null) => void;
   onCancel: () => void;
 }) {
   const [name, setName] = useState("");
+  const [icon, setIcon] = useState<FolderIcon | null>(null); // nulo = automático (sugerido pelo nome)
+  const [picking, setPicking] = useState(false);
+  const input = useRef<HTMLInputElement>(null);
   const isFile = kind === "file";
   return (
     <div
@@ -777,8 +808,23 @@ function CreateRow({
       className="flex h-[26px] items-center gap-1.5 pr-2 max-md:h-[44px]"
     >
       {/* O ícone muda enquanto se digita: algoritmos.js ganha o do JavaScript */}
-      {isFile ? <FileGlyph name={name || "x.nota"} /> : <FolderGlyph name={name || "x"} />}
+      {isFile ? (
+        <FileGlyph name={name || "x.nota"} />
+      ) : (
+        // Clicar no ícone abre a grade para escolher outro (sem tirar o foco do campo de nome)
+        <button
+          type="button"
+          aria-label="Escolher o ícone da pasta"
+          title="Escolher o ícone"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => setPicking(true)}
+          className="flex-none border border-transparent p-0.5 hover:border-[#19e6ff]"
+        >
+          <FolderGlyph name={name || "x"} icon={icon} />
+        </button>
+      )}
       <input
+        ref={input}
         autoFocus
         value={name}
         maxLength={100}
@@ -786,12 +832,31 @@ function CreateRow({
         placeholder={isFile ? "nome.js ou nota" : "Nome da pasta"}
         aria-label={isFile ? "Nome do arquivo" : "Nome da pasta"}
         onKeyDown={(e) => {
-          if (e.key === "Enter") onSubmit(name);
+          if (e.key === "Enter") onSubmit(name, icon);
           if (e.key === "Escape") onCancel();
         }}
-        onBlur={() => !name.trim() && onCancel()}
+        onBlur={() => !name.trim() && !picking && onCancel()}
         className="min-w-0 flex-1 border border-[#19e6ff] bg-[#0f141a] px-1 text-[12.5px] text-[#e6edf3] outline-none placeholder:text-[#6e7a8a] max-md:text-base"
       />
+      {picking && (
+        <DarkDialog
+          title="Ícone da pasta"
+          onClose={() => {
+            setPicking(false);
+            setTimeout(() => input.current?.focus(), 0);
+          }}
+        >
+          <IconPicker
+            value={icon}
+            suggested={suggestFolderIcon(name || "x")}
+            onChange={(choice) => {
+              setIcon(choice);
+              setPicking(false);
+              setTimeout(() => input.current?.focus(), 0);
+            }}
+          />
+        </DarkDialog>
+      )}
     </div>
   );
 }

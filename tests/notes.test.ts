@@ -156,6 +156,44 @@ describe("pastas e arquivos", () => {
   });
 });
 
+describe("ícone da pasta", () => {
+  it("guarda o ícone escolhido ao criar e permite trocar ou voltar ao automático", async () => {
+    const u = await createTestUser("icone");
+    const repo = val(await createRepo(u, "R"));
+    const folder = val(await createNode(u, repo, null, "folder", "Estudos", "bulb"));
+    const icon = async () => (await getTree(u, repo))!.find((n) => n.id === folder)?.icon;
+    expect(await icon()).toBe("bulb");
+    val(await renameNode(u, folder, "Estudos", "lock")); // troca só o ícone (mesmo nome)
+    expect(await icon()).toBe("lock");
+    val(await renameNode(u, folder, "Estudos", null)); // volta ao automático
+    expect(await icon()).toBeNull();
+    val(await renameNode(u, folder, "Outro nome")); // sem informar o ícone, ele não muda
+    val(await renameNode(u, folder, "Outro nome", "git"));
+    val(await renameNode(u, folder, "Mais um nome"));
+    expect(await icon()).toBe("git");
+  });
+
+  it("recusa ícone que não está na lista (nada é criado nem alterado)", async () => {
+    const u = await createTestUser("icone-ruim");
+    const repo = val(await createRepo(u, "R"));
+    expect(await createNode(u, repo, null, "folder", "P", "<img src=x>")).toEqual({ ok: false, error: "invalid_icon" });
+    expect(await createNode(u, repo, null, "folder", "P", "nao-existe")).toEqual({ ok: false, error: "invalid_icon" });
+    expect(await getTree(u, repo)).toEqual([]);
+    const folder = val(await createNode(u, repo, null, "folder", "P", "database"));
+    expect(await renameNode(u, folder, "P", "../../x")).toEqual({ ok: false, error: "invalid_icon" });
+    expect((await getTree(u, repo))![0].icon).toBe("database");
+  });
+
+  it("arquivos nunca guardam ícone", async () => {
+    const u = await createTestUser("icone-arquivo");
+    const repo = val(await createRepo(u, "R"));
+    const file = val(await createNode(u, repo, null, "file", "a.js", "lock"));
+    expect((await getTree(u, repo))!.find((n) => n.id === file)?.icon).toBeNull();
+    val(await renameNode(u, file, "b.js", "bulb"));
+    expect((await getTree(u, repo))!.find((n) => n.id === file)?.icon).toBeNull();
+  });
+});
+
 describe("mover", () => {
   it("move arquivo e pasta (com tudo dentro) para outra pasta e para a raiz", async () => {
     const u = await createTestUser("move");

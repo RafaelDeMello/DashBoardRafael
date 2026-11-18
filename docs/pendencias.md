@@ -13,7 +13,7 @@ Ordem sugerida:
 3. ~~**Abas dos arquivos abertos**~~ **feitas** (até 20 por repositório, lembradas no navegador; ponto amarelo = ainda salvando; fechar a ativa abre a da direita).
    ~~**Painel "Estrutura"**~~ **feito** (títulos H1/H2 das notas e `#` dos arquivos Markdown, no computador; clique pula até o título).
    Ainda não existe no celular (a árvore e o editor são telas separadas) nem para funções de código.
-4. **Seletor de ícone da pasta** ao criar (hoje o ícone é sugerido pelo nome e só dá para trocar por código/rename com `icon`).
+4. ~~**Seletor de ícone da pasta**~~ **feito** (clicar no ícone ao criar a pasta, ou "Mudar ícone…" no menu da pasta; "Automático" volta à sugestão pelo nome).
 5. **Opcional:** visão alternativa em colunas (Finder) na raiz de Notas.
 
 Pontos a conferir na etapa 1 (não testados):

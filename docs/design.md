@@ -98,7 +98,8 @@ Deve seguir o mesmo nível retrô (a atualizar depois: hoje está mais retrô qu
 - **Repositório (`/notas/[repoId]`):** árvore de pastas e arquivos à esquerda e editor à direita, com o caminho, a aba do arquivo,
   a barra de status retrô e a linha de teclas de função (F2 nova nota, F3 nova pasta, F6 renomear, Del apagar).
 - **Ícones como nas IDEs:** o arquivo ganha o ícone da **extensão** (`.js`, `.py`, `.sql`, `Dockerfile`...) e a pasta o do **assunto**
-  sugerido pelo nome (banco de dados, infra, docker...). Regras em `src/lib/note-names.ts`.
+  sugerido pelo nome (banco de dados, infra, docker...). Dá para escolher outro: clicar no ícone ao criar a pasta ou "Mudar ícone…" no menu
+  (14 ícones fixos + "Automático"; o servidor só aceita ícones dessa lista). Regras em `src/lib/note-names.ts`.
 - **Editores:** sem extensão ou `.nota` = editor de notas de tópicos (TipTap, guarda JSON); outras extensões = editor de texto com
   CodeMirror (cores de sintaxe pela extensão, números de linha, autoindentação, fechamento de parênteses; no celular, barra de símbolos
   acima do teclado). Abas dos arquivos abertos (até 20 por repositório, lembradas neste navegador; no celular viram uma faixa rolável). Painel "Estrutura" sob a árvore (computador): títulos da nota aberta ou do arquivo Markdown, com recuo por nível; clicar pula até o título. Salvamento automático.

@@ -8,6 +8,7 @@ import {
   MAX_NODES_PER_REPO,
   MAX_REPOS,
   fileType,
+  isFolderIcon,
   validateName,
   withSuffix,
 } from "@/lib/note-names";
@@ -30,7 +31,7 @@ type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Executor = Pick<Tx, "select" | "insert" | "update" | "delete" | "execute">;
 
 export type NoteError =
-  | "invalid_name" | "exists" | "limit" | "depth" | "not_found" | "cycle" | "type_change" | "too_large" | "invalid_content";
+  | "invalid_name" | "invalid_icon" | "exists" | "limit" | "depth" | "not_found" | "cycle" | "type_change" | "too_large" | "invalid_content";
 export type Result<T = undefined> = { ok: true; value: T } | { ok: false; error: NoteError };
 const ok = <T>(value: T): Result<T> => ({ ok: true, value });
 const fail = (error: NoteError): Result<never> => ({ ok: false, error });
@@ -219,6 +220,8 @@ export async function createNode(
 ): Promise<Result<string>> {
   const name = validateName(rawName);
   if (!name.ok) return fail("invalid_name");
+  // O ícone de pasta é uma escolha de uma lista fixa (ou nulo = sugerido pelo nome)
+  if (kind === "folder" && icon && !isFolderIcon(icon)) return fail("invalid_icon");
   if (!(await findRepo(db, userId, repoId))) return fail("not_found");
 
   if (parentId) {
@@ -260,6 +263,7 @@ export async function renameNode(
 ): Promise<Result> {
   const name = validateName(rawName);
   if (!name.ok) return fail("invalid_name");
+  if (icon && !isFolderIcon(icon)) return fail("invalid_icon");
   const node = await findNode(db, userId, nodeId);
   if (!node) return fail("not_found");
   // Trocar a extensão de um arquivo que já tem texto mudaria o tipo do editor e estragaria o conteúdo

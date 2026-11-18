@@ -157,6 +157,25 @@ export function suggestFolderIcon(name: string): FolderIcon {
   return "folder";
 }
 
+/** Nome de cada ícone de pasta, para a grade de escolha. */
+export const FOLDER_ICON_LABEL: Record<FolderIcon, string> = {
+  folder: "Pasta",
+  database: "Banco de dados",
+  "database-cog": "SQL",
+  algorithms: "Algoritmos",
+  server: "Servidor",
+  docker: "Docker",
+  network: "Rede",
+  language: "Idioma",
+  lock: "Segurança",
+  cloud: "Nuvem",
+  world: "Web",
+  bulb: "Ideias",
+  code: "Código",
+  book: "Livros",
+  git: "Git",
+};
+
 export function isFolderIcon(value: string): value is FolderIcon {
   return (FOLDER_ICONS as readonly string[]).includes(value);
 }

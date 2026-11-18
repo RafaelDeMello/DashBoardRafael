@@ -9,6 +9,7 @@ export const NOTE_ERRORS: Record<string, string> = {
   type_change: "Não dá trocar o tipo de um arquivo que já tem conteúdo.",
   too_large: "O arquivo é grande demais.",
   invalid_content: "O conteúdo não é válido.",
+  invalid_icon: "Ícone inválido.",
   confirm: "Digite o nome exato para confirmar.",
   invalid: "Dados inválidos.",
 };
